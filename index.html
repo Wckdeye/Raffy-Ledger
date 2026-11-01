@@ -4,7 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Raffy's Ledger</title>
-<meta name="theme-color" content="#2A46A3">
+<meta name="theme-color" content="#090C12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4F6FA" media="(prefers-color-scheme: light)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Ledger">
@@ -13,30 +14,31 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
-/* Layout: single phone column, sticky header, bottom tab bar + floating add button; ledger-ink blue on a faintly green paper ground */
+/* Layout: single phone column, instrument-panel cards on a deep graphite ground; one electric accent, mono readouts, line icons in tinted tiles */
 :root{
-  --bg:#F1F4F0; --surface:#FFFFFF; --surface-2:#E6EBE5; --ink:#16201A; --muted:#5A675F; --line:#D3DBD4;
-  --accent:#2A46A3; --accent-ink:#FFFFFF;
-  --in:#1C7849; --out:#B03D2A; --warn:#9A6300; --in-soft:#DDEFE4; --out-soft:#F6E1DC; --warn-soft:#F5EAD2;
-  --shadow:0 1px 2px rgba(22,32,26,.06),0 8px 24px rgba(22,32,26,.06);
-  --f-display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
-  --f-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-  --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,"Roboto Mono",monospace;
-  color-scheme:light;
+  --bg:#090C12; --surface:#10151F; --surface-2:#171E2B; --line:#212A3A; --ink:#E8EDF7; --muted:#8792A8;
+  --accent:#7B9CFF; --accent-ink:#0A0E18; --in:#47E0BD; --out:#FF7D6E; --warn:#FFC15A;
+  --grid:rgba(123,156,255,.09); --halo:rgba(123,156,255,.22);
+  --glow:0 0 0 1px rgba(123,156,255,.55);
+  --f-display:"Sora",ui-rounded,system-ui,sans-serif;
+  --f-body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-num:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  color-scheme:dark;
 }
-@media (prefers-color-scheme:dark){:root{
-  --bg:#0E1311; --surface:#171E1A; --surface-2:#212A25; --ink:#E6ECE8; --muted:#94A29A; --line:#2D3832;
-  --accent:#93AAF6; --accent-ink:#0E1311;
-  --in:#5DC48F; --out:#F08B75; --warn:#E2A83C; --in-soft:#183026; --out-soft:#3A1F19; --warn-soft:#352915;
-  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.25); color-scheme:dark}}
+@media (prefers-color-scheme:light){:root{
+  --bg:#F4F6FA; --surface:#FFFFFF; --surface-2:#EBEFF6; --line:#DCE2EC; --ink:#0E1420; --muted:#5B6577;
+  --accent:#3356E0; --accent-ink:#FFFFFF; --in:#0C9A76; --out:#D64C3B; --warn:#B07400;
+  --grid:rgba(51,86,224,.07); --halo:rgba(51,86,224,.14);
+  --glow:0 0 0 1px rgba(51,86,224,.55);
+  color-scheme:light}}
 
 *{box-sizing:border-box}
 html,body{min-height:100%;margin:0}
 body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--f-body);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;
   padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
-  padding-block:env(safe-area-inset-top,0px) calc(96px + env(safe-area-inset-bottom,0px))}
+  padding-block:env(safe-area-inset-top,0px) calc(104px + env(safe-area-inset-bottom,0px))}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
 [hidden]{display:none!important}
 .wrap{max-width:560px;margin:0 auto}
@@ -46,142 +48,180 @@ button{cursor:pointer}
 .num{font-family:var(--f-num);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
 .muted{color:var(--muted)}
 .in{color:var(--in)} .out{color:var(--out)}
-h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.015em}
-.eyebrow{font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:-.02em;font-weight:600}
+.eyebrow{font-family:var(--f-num);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:500}
+
+.ic{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.tile{--c:var(--accent);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;color:var(--c);
+  background:color-mix(in srgb,var(--c) 13%,transparent);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 26%,transparent)}
+.tile.sm{width:30px;height:30px;border-radius:9px}
+.tile.sm .ic{width:16px;height:16px}
+.t-expense{--c:var(--out)} .t-income,.t-ar_collect{--c:var(--in)} .t-transfer{--c:var(--accent)} .t-ar_charge{--c:var(--warn)} .t-neutral{--c:var(--muted)}
 
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:14px 10px;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.top h1{font-size:22px}
+.top h1{font-size:21px}
 .mswitch{display:flex;align-items:center;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px}
 .mswitch button{border:0;background:none;width:32px;height:32px;border-radius:999px;font-size:18px;line-height:1;color:var(--muted)}
-.mswitch span{font-weight:600;font-size:13.5px;min-width:84px;text-align:center}
+.mswitch span{font-family:var(--f-num);font-weight:500;font-size:12.5px;min-width:84px;text-align:center;letter-spacing:.02em}
 
-.stack{display:flex;flex-direction:column;gap:18px}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
-.section-h{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:10px}
-.section-h h2{font-size:17px}
+.stack{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px}
+.section-h{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.section-h h2{font-size:16px}
 .link{background:none;border:0;color:var(--accent);font-weight:600;font-size:13.5px;padding:4px 0}
 
-.hero{background:var(--accent);color:var(--accent-ink);border-radius:18px;padding:18px;box-shadow:var(--shadow)}
-.hero .eyebrow{color:inherit;opacity:.78}
-.hero .big{font-family:var(--f-num);font-size:clamp(28px,8.5vw,38px);font-weight:600;letter-spacing:-.03em;margin-top:2px;font-variant-numeric:tabular-nums}
-.hero .big small{font-size:.5em;opacity:.7}
-.hero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(127,127,127,.35)}
+.hero{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
+.hero::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;
+  -webkit-mask-image:linear-gradient(160deg,#000 10%,transparent 75%);mask-image:linear-gradient(160deg,#000 10%,transparent 75%)}
+.hero::after{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-120px;pointer-events:none;background:radial-gradient(closest-side,var(--halo),transparent)}
+.hero>*{position:relative}
+.hero .big{font-family:var(--f-num);font-size:clamp(30px,9vw,40px);font-weight:600;letter-spacing:-.035em;margin-top:6px;font-variant-numeric:tabular-nums}
+.hero .big small{font-size:.48em;color:var(--muted);font-weight:500}
+.hero-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px;padding-top:14px;border-top:1px dashed var(--line)}
 .hero-grid div{min-width:0}
-.hero-grid .v{font-family:var(--f-num);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hero-grid .k{font-size:11.5px;opacity:.78}
+.hero-grid .v{font-family:var(--f-num);font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.hero-grid .k{display:flex;align-items:center;gap:5px;font-size:11.5px;color:var(--muted)}
+.hero-grid .k .ic{width:14px;height:14px}
+
+.quick{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.quick button{display:flex;flex-direction:column;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:12px 4px 10px;font-size:12px;font-weight:600;color:var(--ink)}
+.quick button:active{transform:scale(.97)}
 
 .pl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .pl div{min-width:0}
 .pl .v{font-family:var(--f-num);font-weight:600;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pl .k{font-size:12px;color:var(--muted)}
-.note{font-size:12.5px;color:var(--muted);margin-top:8px}
+.note{font-size:12.5px;color:var(--muted);margin-top:10px}
 
-.bars{display:flex;flex-direction:column;gap:9px}
-.bar-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;font-size:13.5px}
-.bar-row .amt{font-family:var(--f-num);font-variant-numeric:tabular-nums}
-.bar-track{grid-column:1/-1;height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:13.5px}
+.bar-row .amt{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-size:13px}
+.bar-row .nm{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{grid-column:2/-1;height:4px;background:var(--surface-2);border-radius:99px;overflow:hidden}
 .bar-fill{height:100%;background:var(--out);border-radius:99px}
 .bar-fill.inc{background:var(--in)}
+.bar-row .tile{grid-row:span 2}
 
 .rows{display:flex;flex-direction:column}
-.row{display:flex;align-items:center;gap:12px;padding:11px 0;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%}
+.row{display:flex;align-items:center;gap:12px;padding:10px 0;border:0;border-top:1px solid var(--line);background:none;text-align:left;width:100%}
 .rows .row:first-child{border-top:0}
 .row .main{flex:1;min-width:0}
 .row .t{font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .row .s{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .a{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:500;font-size:14.5px;white-space:nowrap}
-.mark{width:8px;height:8px;border-radius:99px;flex:none;background:var(--muted)}
-.mark.expense{background:var(--out)} .mark.income,.mark.ar_collect{background:var(--in)} .mark.transfer{background:var(--accent)} .mark.ar_charge{background:var(--warn)}
-.day-h{font-size:12px;font-weight:600;color:var(--muted);padding:14px 0 2px;letter-spacing:.02em}
+.row .a{font-family:var(--f-num);font-variant-numeric:tabular-nums;font-weight:500;font-size:14px;white-space:nowrap}
+.day-h{font-family:var(--f-num);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:14px 0 4px}
 
-.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px;white-space:nowrap}
-.pill.ok{background:var(--in-soft);color:var(--in)}
-.pill.warn{background:var(--warn-soft);color:var(--warn)}
-.pill.bad{background:var(--out-soft);color:var(--out)}
-.pill.plain{background:var(--surface-2);color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px;white-space:nowrap;--c:var(--muted);color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.pill.ok{--c:var(--in)} .pill.warn{--c:var(--warn)} .pill.bad{--c:var(--out)}
 
 .filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .filters::-webkit-scrollbar{display:none}
 
 .cc{display:flex;flex-direction:column;gap:12px}
-.cc-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
-.cc-top h3{font-size:17px}
+.cc-top{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cc-id{display:flex;align-items:center;gap:12px;min-width:0}
+.cc-id>div{min-width:0}
+.cc-top h3{font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cc-owed{text-align:right}
-.cc-owed .v{font-family:var(--f-num);font-weight:600;font-size:18px;white-space:nowrap}
-.stmt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.cc-owed .v{font-family:var(--f-num);font-weight:600;font-size:17px;white-space:nowrap}
+.stmt{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;background:var(--surface-2);border-radius:12px;padding:10px 12px}
 .stmt div{min-width:0}
 .stmt .k{font-size:11.5px;color:var(--muted)}
-.stmt .v{font-family:var(--f-num);font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stmt .v{font-family:var(--f-num);font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .actions{display:flex;gap:8px;flex-wrap:wrap}
 
-.btn{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:9px 14px;font-weight:600;font-size:14px}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:9px 14px;font-weight:600;font-size:14px}
+.btn .ic{width:17px;height:17px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);box-shadow:var(--glow)}
 .btn.danger{color:var(--out)}
 .btn.block{width:100%;padding:13px}
-.btn:disabled{opacity:.5;cursor:default}
+.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
 
-.aging{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--surface-2);margin:10px 0 8px}
-.aging span{height:100%}
+.aging{display:flex;gap:3px;height:6px;margin:12px 0 10px}
+.aging span{height:100%;border-radius:99px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+.legend i{display:inline-block;width:7px;height:7px;border-radius:99px;margin-right:5px}
 .a0{background:var(--in)} .a1{background:var(--warn)} .a2{background:var(--out)}
 
 .empty{text-align:center;padding:28px 16px;color:var(--muted)}
-.empty h2{color:var(--ink);font-size:19px;margin-bottom:6px}
+.empty h2{color:var(--ink);font-size:18px;margin-bottom:6px}
 .empty p{margin:0 auto 14px;max-width:34ch}
 .banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px}
-.banner.warn{background:var(--warn-soft);border-color:transparent;color:var(--ink)}
+.banner.warn{border-color:color-mix(in srgb,var(--warn) 45%,var(--line));background:color-mix(in srgb,var(--warn) 9%,var(--surface))}
 
-.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:20;border-top:1px solid var(--line);
+  background:color-mix(in srgb,var(--surface) 86%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
   padding:6px max(8px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px,env(safe-area-inset-left,0px))}
 .nav-in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
-.nav button{border:0;background:none;padding:6px 2px;border-radius:10px;font-size:11.5px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:3px}
-.nav button svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button{position:relative;border:0;background:none;padding:7px 2px 5px;border-radius:10px;font-size:11px;font-weight:600;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:4px}
+.nav button .ic{width:22px;height:22px}
 .nav button[aria-current="page"]{color:var(--accent)}
-.fab{position:fixed;z-index:21;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(76px + env(safe-area-inset-bottom,0px));
-  width:58px;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:var(--shadow);display:grid;place-items:center}
-.fab svg{width:26px;height:26px;stroke:currentColor;stroke-width:2.4;stroke-linecap:round}
+.nav button[aria-current="page"]::before{content:"";position:absolute;top:-7px;left:50%;width:22px;height:2px;margin-left:-11px;border-radius:2px;background:var(--accent)}
+.fab{position:fixed;z-index:21;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(80px + env(safe-area-inset-bottom,0px));
+  width:58px;height:58px;border-radius:18px;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:0 10px 28px rgba(0,0,0,.35);display:grid;place-items:center}
+.fab .ic{width:26px;height:26px;stroke-width:2.3}
 @media (min-width:640px){.fab{right:calc(50% - 280px + 4px)}}
 
-.scrim{position:fixed;inset:0;z-index:40;background:rgba(10,14,12,.45)}
-.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92%;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);
-  border-radius:20px 20px 0 0;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
-  box-shadow:0 -10px 40px rgba(0,0,0,.2)}
-.sheet-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
-.grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 2px}
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(3,6,12,.6);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:41;max-height:92%;overflow-y:auto;overscroll-behavior:contain;background:var(--bg);border-top:1px solid var(--line);
+  border-radius:22px 22px 0 0;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  box-shadow:0 -10px 40px rgba(0,0,0,.35)}
+.sheet-in{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.grab{width:40px;height:4px;border-radius:99px;background:var(--line);margin:4px auto 0}
 .sheet-h{display:flex;justify-content:space-between;align-items:center}
-.sheet-h h2{font-size:19px}
+.sheet-h h2{font-size:18px}
 .x{border:0;background:var(--surface-2);width:32px;height:32px;border-radius:99px;font-size:18px;line-height:1;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s cubic-bezier(.2,.8,.3,1)}@keyframes up{from{transform:translateY(30px);opacity:.4}}}
 
-.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface-2);border-radius:12px;padding:3px;gap:2px}
-.seg button{border:0;background:none;border-radius:9px;padding:8px 2px;font-weight:600;font-size:13.5px;color:var(--muted)}
-.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.amt-wrap{display:flex;align-items:baseline;gap:6px;border-bottom:2px solid var(--line);padding-bottom:4px}
-.amt-wrap:focus-within{border-color:var(--accent)}
-.amt-wrap span{font-family:var(--f-num);font-size:28px;color:var(--muted)}
-.amt-input{border:0;background:none;outline:none;font-family:var(--f-num);font-size:34px;font-weight:600;width:100%;min-width:0;padding:0}
-.field{display:flex;flex-direction:column;gap:6px}
-.field>.lbl{font-size:12.5px;font-weight:600;color:var(--muted)}
-.input,.select{border:1px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:3px;gap:2px}
+.seg button{display:flex;flex-direction:column;align-items:center;gap:3px;border:0;background:none;border-radius:11px;padding:8px 2px 7px;font-weight:600;font-size:12px;color:var(--muted)}
+.seg button .ic{width:18px;height:18px}
+.seg button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button[aria-pressed="true"][data-type="expense"]{color:var(--out)}
+.seg button[aria-pressed="true"][data-type="income"],.seg button[aria-pressed="true"][data-type="collect"]{color:var(--in)}
+.seg button[aria-pressed="true"][data-type="transfer"]{color:var(--accent)}
+.amt-wrap{display:flex;align-items:baseline;gap:6px;border-bottom:1px solid var(--line);padding-bottom:6px}
+.amt-wrap:focus-within{border-color:var(--accent);box-shadow:0 1px 0 var(--accent)}
+.amt-wrap span{font-family:var(--f-num);font-size:26px;color:var(--muted)}
+.amt-input{border:0;background:none;outline:none;font-family:var(--f-num);font-size:36px;font-weight:600;width:100%;min-width:0;padding:0;letter-spacing:-.03em}
+.field{display:flex;flex-direction:column;gap:8px}
+.field>.lbl,.lbl{font-family:var(--f-num);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;font-weight:500;color:var(--muted)}
+.input,.select{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 12px;width:100%;min-width:0}
+.input:focus,.select:focus{outline:none;border-color:var(--accent)}
 .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{position:relative}
-.chip input{position:absolute;opacity:0;pointer-events:none}
-.chip span{display:inline-block;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 12px;font-size:13.5px;font-weight:500;cursor:pointer;user-select:none}
-.chip input:checked+span{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
-.chip input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
-.btnchip{border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 12px;font-size:13.5px;font-weight:500;white-space:nowrap}
-.btnchip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chip input,.tpick input{position:absolute;opacity:0;pointer-events:none}
+.chip span{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 12px 7px 10px;font-size:13.5px;font-weight:500;cursor:pointer;user-select:none}
+.chip span .ic{width:16px;height:16px;color:var(--muted)}
+.chip input:checked+span{background:color-mix(in srgb,var(--accent) 14%,var(--surface));border-color:var(--accent);color:var(--ink);box-shadow:var(--glow)}
+.chip input:checked+span .ic{color:var(--accent)}
+.chip input:focus-visible+span,.tpick input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tpick{position:relative;min-width:0}
+.tpick span{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:78px;padding:10px 4px;border:1px solid var(--line);border-radius:14px;background:var(--surface);
+  font-size:11.5px;font-weight:600;line-height:1.2;text-align:center;color:var(--muted);cursor:pointer;user-select:none;overflow-wrap:break-word;-webkit-hyphens:auto;hyphens:auto}
+.tpick span .ic{width:22px;height:22px;color:var(--ink)}
+.tpick input:checked+span{border-color:var(--accent);color:var(--ink);background:color-mix(in srgb,var(--accent) 13%,var(--surface));box-shadow:var(--glow)}
+.tpick input:checked+span .ic{color:var(--accent)}
+.btnchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:7px 12px;font-size:13px;font-weight:600;white-space:nowrap;color:var(--muted)}
+.btnchip .ic{width:15px;height:15px}
+.btnchip[aria-pressed="true"]{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 12%,var(--surface))}
 .err{color:var(--out);font-size:13px;font-weight:600}
+.err:empty{display:none}
 .hint{font-size:12.5px;color:var(--muted)}
-.tag-x{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 6px 5px 12px;font-size:13px}
+.tag-x{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:99px;padding:5px 6px 5px 10px;font-size:13px}
+.tag-x .ic{width:15px;height:15px;color:var(--muted)}
 .tag-x button{border:0;background:var(--surface-2);width:22px;height:22px;border-radius:99px;line-height:1;color:var(--muted)}
 .inline-add{display:flex;gap:8px}
-.toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);
-  border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
-.toast.bad{background:var(--out);color:#fff}
-.setup-row{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:8px;align-items:center}
+.toast{position:fixed;z-index:60;left:50%;transform:translateX(-50%);bottom:calc(152px + env(safe-area-inset-bottom,0px));background:var(--surface-2);color:var(--ink);border:1px solid var(--line);
+  border-radius:12px;padding:10px 14px;font-size:14px;font-weight:500;max-width:calc(100% - 32px);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.toast.bad{background:var(--out);color:#fff;border-color:var(--out)}
+.setup-row,.sb-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,8.5rem);gap:10px;align-items:center}
+.sb-name{min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-name small{display:block;font-weight:500;font-size:11.5px;color:var(--muted)}
+.sb-list{display:flex;flex-direction:column;gap:10px}
 </style>
 </head>
 <body>
@@ -197,16 +237,8 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
   <main id="view" class="stack"></main>
 </div>
 
-<button type="button" class="fab" id="fab" aria-label="Add entry" hidden><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-<nav class="nav" id="nav" hidden>
-  <div class="nav-in">
-    <button type="button" data-v="home"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/></svg>Home</button>
-    <button type="button" data-v="activity"><svg viewBox="0 0 24 24"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>Activity</button>
-    <button type="button" data-v="cards"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>Cards</button>
-    <button type="button" data-v="owed"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 11h5M18.5 8.5v5"/></svg>Owed to me</button>
-    <button type="button" data-v="accounts"><svg viewBox="0 0 24 24"><path d="M4 7h16v12H4zM4 7l2-3h12l2 3M15 13h2"/></svg>Accounts</button>
-  </div>
-</nav>
+<button type="button" class="fab" id="fab" aria-label="Add entry" hidden></button>
+<nav class="nav" id="nav" hidden><div class="nav-in" id="nav-in"></div></nav>
 <div id="sheet-root"></div>
 <div id="toast-root"></div>
 <input type="file" id="importfile" accept="application/json,.json" hidden>
@@ -214,6 +246,58 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 <script>
 (() => {
 "use strict";
+/* ---------- icons ---------- */
+const P = {
+  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6"/>',
+  baby:'<circle cx="12" cy="12" r="8"/><path d="M9.3 11h.01M14.7 11h.01M9.6 14.6a3.3 3.3 0 0 0 4.8 0M12 4c-1 1.3-.7 2.6.7 3.1"/>',
+  fuel:'<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M4 10h10M14 8l3.5 3.5V17a1.5 1.5 0 0 0 3 0V9l-3-3"/>',
+  bolt:'<path d="M13 2.5 4.5 13.5H12l-1 8 8.5-11H12z"/>',
+  food:'<path d="M5 3v7a2.5 2.5 0 0 0 5 0V3M7.5 3v18M17 21V3c-2.2 1-3.5 3.6-3.5 7.5 0 1.4.7 2.5 1.8 2.5H17"/>',
+  home:'<path d="M3.5 11 12 4l8.5 7M5.5 9.5V20h13V9.5M10 20v-5.5h4V20"/>',
+  bag:'<path d="M5 8h14l-1 12.5H6zM9 8V6.5a3 3 0 0 1 6 0V8"/>',
+  health:'<path d="M20.5 9.5c0 5.5-8.5 10.5-8.5 10.5S3.5 15 3.5 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8.5 2.5z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
+  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
+  repeat:'<path d="M17 2.5 20.5 6 17 9.5M3.5 11.5V10a4 4 0 0 1 4-4h13M7 21.5 3.5 18 7 14.5M20.5 12.5V14a4 4 0 0 1-4 4h-13"/>',
+  gift:'<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8.5h14V12M12 8v12.5M12 8S10.5 3.5 8 4.2C6 4.8 7 8 12 8zm0 0s1.5-4.5 4-3.8C18 4.8 17 8 12 8z"/>',
+  percent:'<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
+  dots:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
+  landmark:'<path d="M3 20.5h18M4.5 9.5h15M12 3l8 4.5H4zM6.5 9.5v8M10 9.5v8M14 9.5v8M17.5 9.5v8"/>',
+  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/>',
+  wifi:'<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".9"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  pluscircle:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  key:'<circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
+  cash:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v.01M18 14.5v.01"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  trend:'<path d="m3 17 6-6 4 4 8-8M15 7h6v6"/>',
+  card:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
+  later:'<path d="M5 8h14l-.5 5M9 8V6.5a3 3 0 0 1 6 0V8M6 8l-1 12.5h6"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3 1"/>',
+  out:'<path d="M7 17 17 7M8 7h9v9"/>',
+  in:'<path d="M17 7 7 17M16 17H7V8"/>',
+  swap:'<path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/>',
+  coins:'<ellipse cx="9" cy="6.5" rx="5.5" ry="2.5"/><path d="M3.5 6.5v4c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5v-4M3.5 10.5v4c0 1.4 2.5 2.5 5.5 2.5 1 0 1.9-.1 2.7-.3"/><circle cx="16.5" cy="16" r="4.5"/><path d="M16.5 14v4"/>',
+  bill:'<path d="M6 2.5h12v19l-3-2-3 2-3-2-3 2z"/><path d="M9 7.5h6M9 11.5h6M9 15.5h3.5"/>',
+  tag:'<path d="M3 12V4.5A1.5 1.5 0 0 1 4.5 3H12l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
+  down:'<path d="M12 3.5v12M7 10.5l5 5 5-5M4 20.5h16"/>',
+  up:'<path d="M12 15.5v-12M7 8.5l5-5 5 5M4 20.5h16"/>',
+  table:'<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.5h17M3.5 15h17M9.5 3.5v17"/>',
+  sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
+  grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
+  list:'<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+  wallet:'<path d="M4 7.5V18a2 2 0 0 0 2 2h14V9.5H6A2 2 0 0 1 4 7.5zm0 0A2.5 2.5 0 0 1 6.5 5H17"/><path d="M16 14.5h.01"/>',
+  bank:'<path d="M3 20.5h18M4.5 9.5h15M12 3l8 4.5H4zM6.5 9.5v8M10 9.5v8M14 9.5v8M17.5 9.5v8"/>',
+  pulse:'<path d="M3 12h4l2.5-6 5 12 2.5-6h4"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  install:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/>',
+};
+const ico = (n, cls) => `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true">${P[n] || P.tag}</svg>`;
+const CAT_ICON = {"Groceries":"cart","Baby":"baby","Fuel & transport":"fuel","Utilities & load":"bolt","Food & dining":"food","Household":"home","Shopping":"bag","Health":"health","Personal":"user","Subscriptions":"repeat","Family & gifts":"gift","Interest & fees":"percent","Other":"dots",
+  "Gov't salary":"landmark","Private work":"briefcase","Internet business":"wifi","Parents' allowance":"users","Other income":"pluscircle","Rental":"key"};
+const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/house|home|repair/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge|tax/i,"percent"],[/salary|gov|payroll/i,"landmark"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/rent/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
+const catIcon = c => CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
+
 /* ---------- helpers ---------- */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -238,14 +322,14 @@ const pref = { get(k, d) { try { const v = localStorage.getItem("ledger-pref:" +
                set(k, v) { try { localStorage.setItem("ledger-pref:" + k, JSON.stringify(v)); } catch {} } };
 
 const GROUPS = {
-  cash: {label: "Cash", kind: "asset"}, bank: {label: "Bank", kind: "asset"}, ewallet: {label: "E-wallet", kind: "asset"},
-  invest: {label: "Investment", kind: "asset"}, card: {label: "Credit card", kind: "liability"}, bnpl: {label: "Pay later", kind: "liability"},
+  cash: {label: "Cash", kind: "asset", icon: "cash"}, bank: {label: "Bank", kind: "asset", icon: "bank"}, ewallet: {label: "E-wallet", kind: "asset", icon: "phone"},
+  invest: {label: "Investment", kind: "asset", icon: "trend"}, card: {label: "Credit card", kind: "liability", icon: "card"}, bnpl: {label: "Pay later", kind: "liability", icon: "later"},
 };
 const KINDS = {
-  rent: {label: "Rent", income: "Rental", charge: "Bill rent", monthly: true},
-  internet: {label: "Internet", income: "Internet business", charge: "Bill", monthly: true},
-  loan: {label: "Loan", income: null, charge: "Lend more", monthly: false},
-  other: {label: "Other", income: "Other income", charge: "Charge", monthly: false},
+  rent: {label: "Rent", income: "Rental", charge: "Bill rent", monthly: true, icon: "key"},
+  internet: {label: "Internet", income: "Internet business", charge: "Bill", monthly: true, icon: "wifi"},
+  loan: {label: "Loan", income: null, charge: "Lend more", monthly: false, icon: "coins"},
+  other: {label: "Other", income: "Other income", charge: "Charge", monthly: false, icon: "user"},
 };
 const DEFAULT_ACCOUNTS = [
   ["cash", "Cash on hand", "cash"], ["bank", "Bank account", "bank"], ["gcash", "GCash", "ewallet"], ["pj", "Pickle Jar capital", "invest"],
@@ -255,6 +339,8 @@ const DEFAULT_CATS = {
   income: ["Gov't salary", "Private work", "Internet business", "Parents' allowance", "Other income"],
   expense: ["Groceries", "Baby", "Fuel & transport", "Utilities & load", "Food & dining", "Household", "Shopping", "Health", "Personal", "Subscriptions", "Family & gifts", "Interest & fees", "Other"],
 };
+const NAV = [["home", "Home", "grid"], ["activity", "Activity", "list"], ["cards", "Cards", "card"], ["owed", "Owed to me", "coins"], ["accounts", "Accounts", "wallet"]];
+const TYPES = [["expense", "Expense", "out"], ["income", "Income", "in"], ["transfer", "Transfer", "swap"], ["collect", "Got paid", "coins"]];
 
 /* ---------- storage (on this phone) ---------- */
 const KEY = "raffy-ledger-v1";
@@ -277,6 +363,7 @@ const accounts = all => Object.entries(S.data.accounts).map(([id, a]) => ({id, .
 const people = all => Object.entries(S.data.people).map(([id, p]) => ({id, ...p})).filter(p => all || !p.archived).sort((a, b) => a.name.localeCompare(b.name));
 const kindOf = a => GROUPS[a?.group]?.kind || "asset";
 const accName = id => S.data.accounts[id]?.name || "Deleted account";
+const accIcon = id => GROUPS[S.data.accounts[id]?.group]?.icon || "wallet";
 const pName = id => S.data.people[id]?.name || "Someone";
 const pKind = id => S.data.people[id]?.kind || "other";
 const allTxns = () => Object.entries(S.data.txns).map(([id, t]) => ({...t, id}));
@@ -332,7 +419,7 @@ function cardStatus(a) {
   else if (d < 0) pill = ["bad", `Overdue ${-d}d`];
   else if (d === 0) pill = ["bad", "Due today"];
   else if (d <= 5) pill = ["warn", `Due in ${d}d`];
-  else pill = ["plain", `Due ${dShort(st.due)}`];
+  else pill = ["", `Due ${dShort(st.due)}`];
   return {paid, left, minLeft, d, pill};
 }
 function putTxn(t) { const {id, ...body} = t; S.data.txns[id] = body; save(); }
@@ -353,7 +440,9 @@ function openSheet(title, html, mount) {
   mount?.(r.querySelector(".sheet-in"));
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
-const chipsHTML = (name, items, sel) => `<div class="chips" role="radiogroup">${items.map(([v, l]) => `<label class="chip"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${esc(l)}</span></label>`).join("")}</div>`;
+const chipsHTML = (name, items, sel) => `<div class="chips" role="radiogroup">${items.map(([v, l, ic]) => `<label class="chip"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${ic ? ico(ic) : ""}${esc(l)}</span></label>`).join("")}</div>`;
+const tilesHTML = (name, items, sel) => `<div class="tiles" role="radiogroup">${items.map(([v, l, ic]) => `<label class="tpick"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${ico(ic)}${esc(l)}</span></label>`).join("")}</div>`;
+const accChips = filt => accounts().filter(filt).map(a => [a.id, a.name, GROUPS[a.group].icon]);
 const val = (root, name) => root.querySelector(`input[name="${name}"]:checked`)?.value || null;
 const amtVal = c => c ? (c / 100).toFixed(2) : "";
 function download(name, text, type) {
@@ -362,6 +451,8 @@ function download(name, text, type) {
 }
 
 /* ---------- render ---------- */
+$("#nav-in").innerHTML = NAV.map(([k, l, ic]) => `<button type="button" data-v="${k}">${ico(ic)}${l}</button>`).join("");
+$("#fab").innerHTML = ico("plus");
 function render() {
   const v = $("#view"); const ready = !!S.data;
   $("#nav").hidden = !ready; $("#fab").hidden = !ready;
@@ -376,14 +467,14 @@ function render() {
 }
 
 function txnRow(t) {
-  let title, sub, amt, cls = "";
-  if (t.type === "expense") { title = t.cat; sub = accName(t.acct); amt = "−" + fmt(t.amt); cls = "out"; }
-  else if (t.type === "income") { title = t.cat; sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; }
-  else if (t.type === "transfer") { title = kindOf(S.data.accounts[t.to]) === "liability" ? "Paid " + accName(t.to) : "Transfer"; sub = accName(t.acct) + " → " + accName(t.to); amt = fmt(t.amt); }
-  else if (t.type === "ar_charge") { const loan = pKind(t.person) === "loan"; title = (loan ? "Lent to " : "Billed ") + pName(t.person); sub = loan ? "From " + accName(t.acct) : KINDS[pKind(t.person)].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; }
-  else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; }
+  let title, sub, amt, cls = "", icon;
+  if (t.type === "expense") { title = t.cat; sub = accName(t.acct); amt = "−" + fmt(t.amt); cls = "out"; icon = catIcon(t.cat); }
+  else if (t.type === "income") { title = t.cat; sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = catIcon(t.cat); }
+  else if (t.type === "transfer") { const toLib = kindOf(S.data.accounts[t.to]) === "liability"; title = toLib ? "Paid " + accName(t.to) : "Transfer"; sub = accName(t.acct) + " → " + accName(t.to); amt = fmt(t.amt); icon = toLib ? accIcon(t.to) : "swap"; }
+  else if (t.type === "ar_charge") { const k = pKind(t.person), loan = k === "loan"; title = (loan ? "Lent to " : "Billed ") + pName(t.person); sub = loan ? "From " + accName(t.acct) : KINDS[k].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; icon = loan ? "coins" : "bill"; }
+  else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = KINDS[pKind(t.person)].icon; }
   if (t.note) sub += " · " + t.note;
-  return `<button type="button" class="row" data-tx="${esc(t.id)}"><i class="mark ${t.type}"></i><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}</div></button>`;
+  return `<button type="button" class="row" data-tx="${esc(t.id)}"><span class="tile t-${t.type}">${ico(icon)}</span><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}</div></button>`;
 }
 function wireRows(root) {
   root.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => {
@@ -393,7 +484,7 @@ function wireRows(root) {
 }
 const barsHTML = (obj, inc) => {
   const rows = Object.entries(obj).sort((a, b) => b[1] - a[1]); const max = rows[0]?.[1] || 1;
-  return `<div class="bars">${rows.map(([k, v]) => `<div class="bar-row"><span>${esc(k)}</span><span class="amt">${fmt(v)}</span><div class="bar-track"><div class="bar-fill${inc ? " inc" : ""}" style="width:${Math.max(2, v / max * 100).toFixed(1)}%"></div></div></div>`).join("")}</div>`;
+  return `<div class="bars">${rows.map(([k, v]) => `<div class="bar-row"><span class="tile sm t-${inc ? "income" : "expense"}">${ico(catIcon(k))}</span><span class="nm">${esc(k)}</span><span class="amt">${fmt(v)}</span><div class="bar-track"><div class="bar-fill${inc ? " inc" : ""}" style="width:${Math.max(2, v / max * 100).toFixed(1)}%"></div></div></div>`).join("")}</div>`;
 };
 
 let installEvt = null;
@@ -415,19 +506,25 @@ function renderHome(v) {
   const n = Object.keys(S.data.txns).length;
   const lb = S.data.lastBackup; const needBackup = n >= 5 && (!lb || -daysUntil(lb) > 14);
   v.innerHTML = `
-  ${installEvt && !standalone() ? `<div class="banner"><span>Install the app so it opens offline from your home screen.</span><button type="button" class="btn primary" id="install">Install</button></div>` : ""}
-  ${needBackup ? `<div class="banner warn"><span>${lb ? `Last backup ${-daysUntil(lb)} days ago.` : "You haven't backed up yet."} Your data lives only on this phone.</span><button type="button" class="btn" data-go="accounts">Back up</button></div>` : ""}
+  ${installEvt && !standalone() ? `<div class="banner"><span>Install the app so it opens offline from your home screen.</span><button type="button" class="btn primary" id="install">${ico("install")}Install</button></div>` : ""}
+  ${needBackup ? `<div class="banner warn"><span>${lb ? `Last backup ${-daysUntil(lb)} days ago.` : "You haven't backed up yet."} Your data lives only on this phone.</span><button type="button" class="btn" data-go="accounts">${ico("down")}Back up</button></div>` : ""}
   <section class="hero" aria-label="Net worth">
-    <div class="eyebrow">Net worth today</div>
+    <div class="eyebrow">Net worth · today</div>
     <div class="big">${net < 0 ? "−" : ""}${esc(whole)}<small>.${cents}</small></div>
     <div class="hero-grid">
-      <div><div class="v">${pesoShort(cash)}</div><div class="k">Cash &amp; bank</div></div>
-      <div><div class="v">${pesoShort(recv)}</div><div class="k">Owed to me</div></div>
-      <div><div class="v">${pesoShort(owed)}</div><div class="k">I owe (cards)</div></div>
+      <div><div class="k">${ico("wallet")}Cash &amp; bank</div><div class="v">${pesoShort(cash)}</div></div>
+      <div><div class="k">${ico("coins")}Owed to me</div><div class="v in">${pesoShort(recv)}</div></div>
+      <div><div class="k">${ico("card")}I owe</div><div class="v out">${pesoShort(owed)}</div></div>
     </div>
   </section>
+  <div class="quick">
+    <button type="button" data-q="expense"><span class="tile t-expense">${ico("out")}</span>Expense</button>
+    <button type="button" data-q="income"><span class="tile t-income">${ico("in")}</span>Income</button>
+    <button type="button" data-q="pay"><span class="tile t-transfer">${ico("card")}</span>Pay card</button>
+    <button type="button" data-q="collect"><span class="tile t-ar_collect">${ico("coins")}</span>Got paid</button>
+  </div>
   <section class="card">
-    <div class="section-h"><h2>${esc(mName(S.month))} at a glance</h2></div>
+    <div class="section-h"><h2>${esc(mName(S.month))} at a glance</h2><span class="eyebrow">P&amp;L</span></div>
     <div class="pl">
       <div><div class="v in">${pesoShort(m.tIn)}</div><div class="k">Income</div></div>
       <div><div class="v out">${pesoShort(m.tOut)}</div><div class="k">Expenses</div></div>
@@ -436,11 +533,11 @@ function renderHome(v) {
     ${m.collected || m.lent ? `<div class="note">Collected ${fmt(m.collected)} from people who owe you${m.lent ? ` · lent out ${fmt(m.lent)}` : ""}</div>` : ""}
   </section>
   ${dues.length ? `<section class="card"><div class="section-h"><h2>Coming due</h2><button type="button" class="link" data-go="cards">Cards</button></div><div class="rows">
-    ${dues.map(({a, st}) => `<div class="row"><div class="main"><div class="t">${esc(a.name)}</div><div class="s">Left to pay ${fmt(st.left)}${st.minLeft ? ` · min ${fmt(st.minLeft)}` : ""}</div></div><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span></div>`).join("")}
+    ${dues.map(({a, st}) => `<div class="row"><span class="tile t-transfer">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}</div><div class="s">Left ${fmt(st.left)}${st.minLeft ? ` · min ${fmt(st.minLeft)}` : ""}</div></div><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span></div>`).join("")}
   </div></section>` : ""}
   <section class="card">
     <div class="section-h"><h2>Where it went</h2><span class="muted num" style="font-size:13px">${fmt(m.tOut)}</span></div>
-    ${Object.keys(m.exp).length ? barsHTML(m.exp) : `<p class="muted" style="margin:0">No expenses in ${esc(mName(S.month))} yet. Tap + to log one.</p>`}
+    ${Object.keys(m.exp).length ? barsHTML(m.exp) : `<p class="muted" style="margin:0">No expenses in ${esc(mName(S.month))} yet. Tap Expense above to log one.</p>`}
   </section>
   <section class="card">
     <div class="section-h"><h2>Income streams</h2><span class="muted num" style="font-size:13px">${fmt(m.tIn)}</span></div>
@@ -451,12 +548,17 @@ function renderHome(v) {
     ${recent.length ? `<div class="rows">${recent.map(txnRow).join("")}</div>` : `<p class="muted" style="margin:0">Nothing logged this month.</p>`}
   </section>`;
   wireRows(v); v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
+  v.querySelectorAll("[data-q]").forEach(b => b.onclick = () => {
+    const q = b.dataset.q;
+    if (q === "pay") { const card = accounts().find(a => kindOf(a) === "liability" && cardStatus(a)?.left) || accounts().find(a => kindOf(a) === "liability"); const st = card && cardStatus(card); openTxn({type: "transfer", to: card?.id, amt: st?.left || null}); }
+    else openTxn({type: q});
+  });
   const ib = $("#install"); if (ib) ib.onclick = async () => { installEvt.prompt(); await installEvt.userChoice.catch(() => {}); installEvt = null; render(); };
 }
 
 function renderActivity(v) {
   const m = monthStats(S.month);
-  const F = [["all", "All"], ["expense", "Expenses"], ["income", "Income"], ["transfer", "Transfers"], ["ar", "Owed to me"]];
+  const F = [["all", "All", "list"], ["expense", "Expenses", "out"], ["income", "Income", "in"], ["transfer", "Transfers", "swap"], ["ar", "Owed to me", "coins"]];
   const list = allTxns().filter(t => t.date.startsWith(S.month)).filter(t => S.filter === "all" || (S.filter === "ar" ? t.type.startsWith("ar_") : t.type === S.filter))
     .sort((a, b) => b.date.localeCompare(a.date) || (b.at || 0) - (a.at || 0));
   const days = {}; list.forEach(t => (days[t.date] = days[t.date] || []).push(t));
@@ -466,7 +568,7 @@ function renderActivity(v) {
     <div><div class="v out">${pesoShort(m.tOut)}</div><div class="k">Expenses</div></div>
     <div><div class="v">${pesoShort(m.tIn - m.tOut)}</div><div class="k">Net</div></div>
   </div></section>
-  <div class="filters">${F.map(([k, l]) => `<button type="button" class="btnchip" data-f="${k}" aria-pressed="${S.filter === k}">${l}</button>`).join("")}</div>
+  <div class="filters">${F.map(([k, l, ic]) => `<button type="button" class="btnchip" data-f="${k}" aria-pressed="${S.filter === k}">${ico(ic)}${l}</button>`).join("")}</div>
   <section class="card" style="padding-block:4px 10px">
     ${list.length ? Object.entries(days).map(([d, ts]) => `<div class="day-h">${esc(dLabel(d))}</div><div class="rows">${ts.map(txnRow).join("")}</div>`).join("")
       : `<div class="empty" style="padding:22px 8px"><p style="margin:0">Nothing here for ${esc(mLabel(S.month, true))}.</p></div>`}
@@ -482,11 +584,11 @@ function renderCards(v) {
   const mk = mKey(today());
   const fees = id => allTxns().filter(t => t.type === "expense" && t.acct === id && t.cat === "Interest & fees" && t.date.startsWith(mk)).reduce((s, t) => s + t.amt, 0);
   v.innerHTML = `
-  <section class="card"><div class="eyebrow">Total I owe</div><div class="num" style="font-size:24px;font-weight:600">${fmt(total)}</div><p class="hint" style="margin:6px 0 0">Tap Pay to log a payment from your bank. It's a transfer, so it won't count as an expense twice.</p></section>
+  <section class="hero"><div class="eyebrow">Total I owe</div><div class="big out" style="font-size:30px">${fmt(total)}</div><p class="hint" style="margin:8px 0 0">Tap Pay to log a payment from your bank. It's a transfer, so it won't count as an expense twice.</p></section>
   ${libs.length ? libs.map(a => {
     const st = cardStatus(a); const f = fees(a.id);
     return `<section class="card cc">
-      <div class="cc-top"><div><h3>${esc(a.name)}</h3><div class="muted" style="font-size:12.5px">${esc(GROUPS[a.group].label)}${a.limit ? ` · ${pesoShort(Math.max(0, a.limit - bal[a.id]))} available` : ""}</div></div>
+      <div class="cc-top"><div class="cc-id"><span class="tile t-transfer">${ico(GROUPS[a.group].icon)}</span><div><h3>${esc(a.name)}</h3><div class="muted" style="font-size:12.5px">${esc(GROUPS[a.group].label)}${a.limit ? ` · ${pesoShort(Math.max(0, a.limit - bal[a.id]))} available` : ""}</div></div></div>
         <div class="cc-owed"><div class="v">${fmt(bal[a.id])}</div><div class="muted" style="font-size:12px">balance now</div></div></div>
       ${st ? `<div class="stmt">
           <div><div class="k">Statement</div><div class="v">${fmt(a.stmt.bal)}</div></div>
@@ -496,7 +598,7 @@ function renderCards(v) {
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span><span class="muted" style="font-size:12.5px">${a.stmt.min ? `Min due ${fmt(a.stmt.min)} · ` : ""}due ${esc(dShort(a.stmt.due))}</span></div>`
       : `<p class="hint" style="margin:0">Add this month's statement to track what's due and when.</p>`}
       ${f ? `<div class="hint">Interest &amp; fees this month: <b class="out num">${fmt(f)}</b></div>` : ""}
-      <div class="actions"><button type="button" class="btn primary" data-pay="${a.id}">Pay</button><button type="button" class="btn" data-stmt="${a.id}">${st ? "New statement" : "Add statement"}</button></div>
+      <div class="actions"><button type="button" class="btn primary" data-pay="${a.id}">${ico("swap")}Pay</button><button type="button" class="btn" data-stmt="${a.id}">${ico("bill")}${st ? "New statement" : "Add statement"}</button></div>
     </section>`; }).join("")
   : `<div class="empty"><h2>No cards yet</h2><p>Add credit cards and pay-later accounts in Accounts.</p></div>`}`;
   v.querySelectorAll("[data-pay]").forEach(b => b.onclick = () => { const st = cardStatus({...S.data.accounts[b.dataset.pay], id: b.dataset.pay}); openTxn({type: "transfer", to: b.dataset.pay, amt: st?.left || null}); });
@@ -512,27 +614,27 @@ function renderOwed(v) {
   const mk = mKey(today());
   const billed = new Set(allTxns().filter(t => t.type === "ar_charge" && t.period === mk).map(t => t.person));
   const pending = people().filter(p => KINDS[p.kind].monthly && p.monthly && !billed.has(p.id));
-  const sumB = tot[0] + tot[1] + tot[2] || 1;
-  const F = [["all", "All"], ["rent", "Rent"], ["internet", "Internet"], ["loan", "Loans"], ["other", "Other"]];
+  const sumB = tot[0] + tot[1] + tot[2];
+  const F = [["all", "All", "users"], ["rent", "Rent", "key"], ["internet", "Internet", "wifi"], ["loan", "Loans", "coins"], ["other", "Other", "user"]];
   v.innerHTML = `
-  <section class="card">
+  <section class="hero">
     <div class="eyebrow">${S.pfilter === "all" ? "Total owed to me" : esc(KINDS[S.pfilter].label) + " · owed to me"}</div>
-    <div class="num" style="font-size:26px;font-weight:600">${fmt(total)}</div>
-    <div class="aging" aria-hidden="true">${tot.map((x, i) => x ? `<span class="a${i}" style="width:${(x / sumB * 100).toFixed(1)}%"></span>` : "").join("")}</div>
-    <div class="legend"><span><i class="a0"></i>0–30 days ${pesoShort(tot[0])}</span><span><i class="a1"></i>31–60 ${pesoShort(tot[1])}</span><span><i class="a2"></i>Over 60 ${pesoShort(tot[2])}</span></div>
+    <div class="big in" style="font-size:30px">${fmt(total)}</div>
+    <div class="aging" aria-hidden="true">${sumB ? tot.map((x, i) => x ? `<span class="a${i}" style="flex:${x}"></span>` : "").join("") : `<span style="flex:1;background:var(--surface-2)"></span>`}</div>
+    <div class="legend"><span><i class="a0"></i>0–30d ${pesoShort(tot[0])}</span><span><i class="a1"></i>31–60d ${pesoShort(tot[1])}</span><span><i class="a2"></i>60d+ ${pesoShort(tot[2])}</span></div>
   </section>
-  <div class="filters">${F.map(([k, l]) => `<button type="button" class="btnchip" data-pf="${k}" aria-pressed="${S.pfilter === k}">${l}</button>`).join("")}</div>
-  ${pending.length ? `<button type="button" class="btn primary block" id="billall">Bill ${esc(mName(mk))} · ${pending.length} ${pending.length > 1 ? "people" : "person"} on monthly billing</button>` : ""}
+  <div class="filters">${F.map(([k, l, ic]) => `<button type="button" class="btnchip" data-pf="${k}" aria-pressed="${S.pfilter === k}">${ico(ic)}${l}</button>`).join("")}</div>
+  ${pending.length ? `<button type="button" class="btn primary block" id="billall">${ico("bill")}Bill ${esc(mName(mk))} · ${pending.length} ${pending.length > 1 ? "people" : "person"}</button>` : ""}
   ${ps.map(p => { const a = ag[p.id], r = rec[p.id], k = KINDS[p.kind]; return `<section class="card cc">
-    <div class="cc-top"><div style="min-width:0"><h3>${esc(p.name)}</h3><div class="muted" style="font-size:12.5px">${esc(k.label)}${p.detail ? " · " + esc(p.detail) : ""}${k.monthly && p.monthly ? ` · ${fmt(p.monthly)}/mo, due day ${p.dueDay || 1}` : ""}</div></div>
+    <div class="cc-top"><div class="cc-id"><span class="tile ${r > 0 ? "t-ar_charge" : "t-income"}">${ico(k.icon)}</span><div><h3>${esc(p.name)}</h3><div class="muted" style="font-size:12.5px">${esc(k.label)}${p.detail ? " · " + esc(p.detail) : ""}${k.monthly && p.monthly ? ` · ${pesoShort(p.monthly)}/mo · day ${p.dueDay || 1}` : ""}</div></div></div>
       <div class="cc-owed"><div class="v ${r > 0 ? "out" : ""}">${fmt(r)}</div><div class="muted" style="font-size:12px">${r < 0 ? "paid ahead" : r === 0 ? "settled" : "owes you"}</div></div></div>
     ${r > 0 ? `<div class="chips">${a.b[0] ? `<span class="pill ok">0–30d ${pesoShort(a.b[0])}</span>` : ""}${a.b[1] ? `<span class="pill warn">31–60d ${pesoShort(a.b[1])}</span>` : ""}${a.b[2] ? `<span class="pill bad">60d+ ${pesoShort(a.b[2])}</span>` : ""}</div>` : ""}
     <div class="hint">${a.last ? `Last paid ${fmt(a.last.amt)} on ${esc(dShort(a.last.date))}` : "No payments recorded yet"}</div>
-    <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">Got paid</button><button type="button" class="btn" data-charge="${p.id}">${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}">Edit</button></div>
+    <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">${ico("coins")}Got paid</button><button type="button" class="btn" data-charge="${p.id}">${ico(p.kind === "loan" ? "out" : "bill")}${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}" aria-label="Edit ${esc(p.name)}">${ico("edit")}</button></div>
   </section>`; }).join("")}
   ${ps.length ? "" : `<div class="empty"><h2>${S.pfilter === "all" ? "Who owes you?" : "No one here yet"}</h2><p>Add tenants, internet subscribers, or anyone you've lent money to. Each gets a running balance and aging.</p></div>`}
-  <button type="button" class="btn block" id="addperson">Add person</button>
-  <p class="hint" style="margin:0">Rent and internet bills count as income when billed. A loan doesn't: it just moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
+  <button type="button" class="btn block" id="addperson">${ico("pluscircle")}Add person</button>
+  <p class="hint" style="margin:0">Rent and internet bills count as income when billed. A loan doesn't: it moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
   v.querySelectorAll("[data-pf]").forEach(b => b.onclick = () => { S.pfilter = b.dataset.pf; render(); });
   $("#addperson").onclick = () => openPerson(null, S.pfilter !== "all" ? S.pfilter : "rent");
   const ba = $("#billall"); if (ba) ba.onclick = () => billMonth(pending, mk);
@@ -551,26 +653,27 @@ function renderAccounts(v) {
   const accs = accounts(true);
   const sect = (title, filter) => { const xs = accs.filter(filter); if (!xs.length) return "";
     return `<section class="card"><div class="section-h"><h2>${title}</h2><span class="muted num" style="font-size:13px">${fmt(xs.filter(a => !a.archived).reduce((s, a) => s + bal[a.id], 0))}</span></div><div class="rows">
-    ${xs.map(a => `<button type="button" class="row" data-acc="${a.id}"><div class="main"><div class="t">${esc(a.name)}${a.archived ? ' <span class="pill plain">Hidden</span>' : ""}</div><div class="s">${esc(GROUPS[a.group].label)}</div></div><div class="a">${fmt(bal[a.id])}</div></button>`).join("")}</div></section>`; };
+    ${xs.map(a => `<button type="button" class="row" data-acc="${a.id}"><span class="tile ${kindOf(a) === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}${a.archived ? ' <span class="pill">Hidden</span>' : ""}</div><div class="s">${esc(GROUPS[a.group].label)} · start ${fmt(a.opening || 0)}</div></div><div class="a">${fmt(bal[a.id])}</div></button>`).join("")}</div></section>`; };
   const cats = S.data.cats;
-  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x">${esc(c)}<button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
+  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x">${ico(catIcon(c))}${esc(c)}<button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
     <form class="inline-add" data-addcat="${k}"><input class="input" id="newcat-${k}" placeholder="Add a category" maxlength="40"><button class="btn" type="submit">Add</button></form></div>`;
   const lb = S.data.lastBackup;
   v.innerHTML = `
+  <div class="grid2"><button type="button" class="btn" id="startbal">${ico("sliders")}Starting balances</button><button type="button" class="btn" id="addacc">${ico("pluscircle")}Add account</button></div>
   ${sect("Cash, bank &amp; e-wallets", a => ["cash", "bank", "ewallet"].includes(a.group))}
   ${sect("Investments", a => a.group === "invest")}
   ${sect("Cards &amp; pay later", a => kindOf(a) === "liability")}
-  <button type="button" class="btn block" id="addacc">Add account</button>
   <p class="hint" style="margin:0">Pickle Jar sales stay in its own app. Log money you put in as a transfer to Pickle Jar capital, and money you take out as a transfer back.</p>
   <section class="card stack" style="gap:12px">
     <div class="section-h" style="margin:0"><h2>Backup</h2><span class="hint">${lb ? "Last: " + esc(dShort(lb)) : "Never backed up"}</span></div>
     <p class="hint" style="margin:0">Everything is stored only on this phone. Export a backup now and then and keep it in Google Drive or Messenger to yourself. If you change phones, import it there.</p>
-    <div class="actions"><button type="button" class="btn primary" id="exportjson">Export backup</button><button type="button" class="btn" id="importbtn">Import backup</button><button type="button" class="btn" id="exportcsv">Export CSV</button></div>
+    <div class="actions"><button type="button" class="btn primary" id="exportjson">${ico("down")}Export backup</button><button type="button" class="btn" id="importbtn">${ico("up")}Import</button><button type="button" class="btn" id="exportcsv">${ico("table")}CSV</button></div>
     <div id="importconfirm"></div>
   </section>
-  <section class="card stack" style="gap:16px"><h2 style="font-size:17px">Categories</h2>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
+  <section class="card stack" style="gap:16px"><h2 style="font-size:16px">Categories</h2>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
   v.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => openAccount(b.dataset.acc));
   $("#addacc").onclick = () => openAccount();
+  $("#startbal").onclick = openStartBalances;
   v.querySelectorAll("[data-rmcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rmcat.split(":"); S.data.cats[k].splice(+i, 1); save(); });
   v.querySelectorAll("[data-addcat]").forEach(f => f.onsubmit = e => { e.preventDefault(); const k = f.dataset.addcat; const n = f.querySelector("input").value.trim(); if (n && !S.data.cats[k].includes(n)) { S.data.cats[k].push(n); save(); } });
   $("#exportjson").onclick = () => { S.data.lastBackup = today(); download(`ledger-backup-${today()}.json`, JSON.stringify({app: "raffy-ledger", version: 1, exported: new Date().toISOString(), data: S.data}), "application/json"); save(); toast("Backup saved to Downloads"); };
@@ -598,11 +701,11 @@ function renderSetup(v) {
   $("#title").textContent = "Set up";
   v.innerHTML = `
   <section class="card stack" style="gap:14px">
-    <div><h2 style="font-size:20px">Set up your books</h2><p class="muted" style="margin:6px 0 0">Enter what each account holds today. For cards and SPayLater, enter what you currently owe. Leave blank if zero. You can rename, add or hide accounts later.</p></div>
-    ${DEFAULT_ACCOUNTS.map(([id, name, g]) => `<div class="setup-row"><input class="input" id="sn-${id}" value="${esc(name)}" aria-label="Account name"><input class="input num" id="so-${id}" inputmode="decimal" placeholder="${GROUPS[g].kind === "liability" ? "Owed ₱0.00" : "₱0.00"}" aria-label="${esc(name)} balance"></div>`).join("")}
+    <div><h2 style="font-size:19px">Set up your books</h2><p class="muted" style="margin:6px 0 0">Enter what each account holds today. For cards and SPayLater, enter what you currently owe. Leave blank if zero. You can change any of these later in Accounts → Starting balances.</p></div>
+    ${DEFAULT_ACCOUNTS.map(([id, name, g]) => `<div class="setup-row"><span class="tile sm ${GROUPS[g].kind === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[g].icon)}</span><input class="input" id="sn-${id}" value="${esc(name)}" aria-label="Account name"><input class="input num" id="so-${id}" inputmode="decimal" placeholder="${GROUPS[g].kind === "liability" ? "Owed 0.00" : "0.00"}" aria-label="${esc(name)} balance"></div>`).join("")}
     <div class="err" id="setup-err"></div>
-    <button type="button" class="btn primary block" id="setup-go">Create my books</button>
-    <button type="button" class="btn block" id="setup-import">Restore from a backup instead</button>
+    <button type="button" class="btn primary block" id="setup-go">${ico("check")}Create my books</button>
+    <button type="button" class="btn block" id="setup-import">${ico("up")}Restore from a backup instead</button>
   </section>
   <div id="importconfirm"></div>`;
   $("#setup-import").onclick = () => $("#importfile").click();
@@ -619,31 +722,30 @@ function renderSetup(v) {
   };
 }
 
-/* ---------- entry sheet ---------- */
+/* ---------- sheets ---------- */
 function openTxn(o = {}) {
   const e = o.edit;
   let type = e ? (e.type === "ar_collect" ? "collect" : e.type) : (o.type || pref.get("lastType", "expense"));
   const last = pref.get("lastAcct", {});
   const html = `
-  <div class="seg" role="group" aria-label="Type">${[["expense", "Expense"], ["income", "Income"], ["transfer", "Transfer"], ["collect", "Got paid"]].map(([k, l]) => `<button type="button" data-type="${k}" aria-pressed="${k === type}">${l}</button>`).join("")}</div>
+  <div class="seg" role="group" aria-label="Type">${TYPES.map(([k, l, ic]) => `<button type="button" data-type="${k}" aria-pressed="${k === type}">${ico(ic)}${l}</button>`).join("")}</div>
   <div class="amt-wrap"><span>₱</span><input class="amt-input" id="f-amt" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${amtVal(e?.amt || o.amt)}" aria-label="Amount"></div>
-  <div id="f-dyn" class="stack" style="gap:14px"></div>
+  <div id="f-dyn" class="stack" style="gap:16px"></div>
   <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="f-date" value="${e?.date || today()}"></label>
     <label class="field"><span class="lbl">Note</span><input class="input" id="f-note" maxlength="80" placeholder="Optional" value="${esc(e?.note || "")}"></label></div>
   <div class="err" id="f-err" role="alert"></div>
-  <button type="button" class="btn primary block" id="f-save">${e ? "Save changes" : "Save"}</button>
+  <button type="button" class="btn primary block" id="f-save">${ico("check")}${e ? "Save changes" : "Save"}</button>
   ${e ? `<button type="button" class="btn danger block" id="f-del">Delete</button>` : ""}`;
   openSheet(e ? "Edit entry" : "New entry", html, root => {
     const sel = {cat: e?.cat, acct: e?.acct, to: e?.to || o.to, person: e?.person || o.person};
     const dyn = root.querySelector("#f-dyn");
     const capture = () => ["cat", "acct", "to", "person"].forEach(k => { const x = val(dyn, k); if (x) sel[k] = x; });
-    const items = f => accounts().filter(f).map(a => [a.id, a.name]);
     function draw() {
-      const all = items(() => true), assets = items(a => kindOf(a) === "asset");
-      if (type === "expense") dyn.innerHTML = `<div class="field"><span class="lbl">Category</span>${chipsHTML("cat", S.data.cats.expense.map(c => [c, c]), sel.cat)}</div><div class="field"><span class="lbl">Paid with</span>${chipsHTML("acct", all, sel.acct || last.expense)}</div>`;
-      else if (type === "income") dyn.innerHTML = `<div class="field"><span class="lbl">Income stream</span>${chipsHTML("cat", S.data.cats.income.map(c => [c, c]), sel.cat)}</div><div class="field"><span class="lbl">Received in</span>${chipsHTML("acct", all, sel.acct || last.income)}</div>`;
+      const all = accChips(() => true), assets = accChips(a => kindOf(a) === "asset");
+      if (type === "expense") dyn.innerHTML = `<div class="field"><span class="lbl">Category</span>${tilesHTML("cat", S.data.cats.expense.map(c => [c, c, catIcon(c)]), sel.cat)}</div><div class="field"><span class="lbl">Paid with</span>${chipsHTML("acct", all, sel.acct || last.expense)}</div>`;
+      else if (type === "income") dyn.innerHTML = `<div class="field"><span class="lbl">Income stream</span>${tilesHTML("cat", S.data.cats.income.map(c => [c, c, catIcon(c)]), sel.cat)}</div><div class="field"><span class="lbl">Received in</span>${chipsHTML("acct", all, sel.acct || last.income)}</div>`;
       else if (type === "transfer") dyn.innerHTML = `<div class="field"><span class="lbl">From</span>${chipsHTML("acct", all, sel.acct || last.transfer)}</div><div class="field"><span class="lbl">To</span>${chipsHTML("to", all, sel.to)}</div><p class="hint" style="margin:0">Paying a card or SPayLater? From your bank, to the card. Putting money into Pickle Jar? To Pickle Jar capital.</p>`;
-      else if (type === "collect") { const ps = people().map(p => [p.id, p.name + " · " + KINDS[p.kind].label]);
+      else if (type === "collect") { const ps = people().map(p => [p.id, p.name, KINDS[p.kind].icon]);
         dyn.innerHTML = ps.length ? `<div class="field"><span class="lbl">Who paid you</span>${chipsHTML("person", ps, sel.person)}</div><div class="field"><span class="lbl">Deposited to</span>${chipsHTML("acct", assets, sel.acct || last.collect)}</div>` : `<p class="hint" style="margin:0">Add people in the "Owed to me" tab first.</p>`; }
     }
     draw();
@@ -670,11 +772,11 @@ function openCharge(pid, edit) {
   const last = pref.get("lastAcct", {});
   openSheet(edit ? "Edit charge" : (loan ? "Lend to " : "Charge ") + p.name, `
   <div class="amt-wrap"><span>₱</span><input class="amt-input" id="c-amt" inputmode="decimal" placeholder="0.00" value="${amtVal(edit?.amt || (!loan && p.monthly) || 0)}" aria-label="Amount"></div>
-  ${loan ? `<div class="field"><span class="lbl">Lent from</span>${chipsHTML("acct", accounts().filter(a => kindOf(a) === "asset").map(a => [a.id, a.name]), edit?.acct || last.lend)}</div>` : `<p class="hint" style="margin:0">Counts as ${esc(KINDS[p.kind].income)} income on this date and adds to what ${esc(p.name)} owes you.</p>`}
+  ${loan ? `<div class="field"><span class="lbl">Lent from</span>${chipsHTML("acct", accChips(a => kindOf(a) === "asset"), edit?.acct || last.lend)}</div>` : `<p class="hint" style="margin:0">Counts as ${esc(KINDS[p.kind].income)} income on this date and adds to what ${esc(p.name)} owes you.</p>`}
   <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="c-date" value="${edit?.date || today()}"></label>
     <label class="field"><span class="lbl">Note</span><input class="input" id="c-note" maxlength="80" placeholder="Optional" value="${esc(edit?.note || "")}"></label></div>
   <div class="err" id="c-err"></div>
-  <button type="button" class="btn primary block" id="c-save">${edit ? "Save changes" : "Save"}</button>
+  <button type="button" class="btn primary block" id="c-save">${ico("check")}${edit ? "Save changes" : "Save"}</button>
   ${edit ? `<button type="button" class="btn danger block" id="c-del">Delete</button>` : ""}`, root => {
     root.querySelector("#c-save").onclick = () => {
       const err = m => root.querySelector("#c-err").textContent = m;
@@ -690,6 +792,27 @@ function openCharge(pid, edit) {
     if (del) { let armed = false; del.onclick = () => { if (!armed) { armed = true; del.textContent = "Tap again to delete"; return; } delTxn(edit.id); closeSheet(); toast("Deleted"); }; }
   });
 }
+function openStartBalances() {
+  const accs = accounts(true), ps = people(true);
+  const row = (attr, id, icon, cls, name, sub, v) => `<label class="sb-row"><span class="tile sm ${cls}">${ico(icon)}</span><span class="sb-name">${esc(name)}<small>${sub}</small></span><input class="input num" ${attr}="${id}" inputmode="decimal" placeholder="0.00" value="${amtVal(v)}" aria-label="${esc(name)} starting amount"></label>`;
+  openSheet("Starting balances", `
+  <p class="hint" style="margin:0">What each account held when you started tracking. For cards and pay later, what you owed. Changing a starting balance shifts its current balance by the same amount; your entries stay as they are.</p>
+  <div class="lbl">Accounts</div>
+  <div class="sb-list">${accs.map(a => row("data-sba", a.id, GROUPS[a.group].icon, kindOf(a) === "liability" ? "t-expense" : "t-transfer", a.name, kindOf(a) === "liability" ? "Owed at start" : "Held at start", a.opening)).join("")}</div>
+  ${ps.length ? `<div class="lbl">Already owed to you at start</div><div class="sb-list">${ps.map(p => row("data-sbp", p.id, KINDS[p.kind].icon, "t-ar_charge", p.name, KINDS[p.kind].label, p.opening)).join("")}</div>` : ""}
+  <div class="err" id="sb-err"></div>
+  <button type="button" class="btn primary block" id="sb-save">${ico("check")}Save balances</button>`, root => {
+    root.querySelector("#sb-save").onclick = () => {
+      let bad = null; const A = {}, Pp = {};
+      const read = (sel, out) => root.querySelectorAll(`[${sel}]`).forEach(i => { const r = i.value.trim(); const v = r ? parseAmt(r) : 0; if (r && v == null && !isZeroish(r)) bad = bad || i; out[i.getAttribute(sel)] = v || 0; });
+      read("data-sba", A); read("data-sbp", Pp);
+      if (bad) { root.querySelector("#sb-err").textContent = "One of the amounts isn't a number. Use digits like 12,500.00."; bad.focus(); return; }
+      for (const k in A) if (S.data.accounts[k]) S.data.accounts[k].opening = A[k];
+      for (const k in Pp) if (S.data.people[k]) S.data.people[k].opening = Pp[k];
+      save(); closeSheet(); toast("Starting balances updated");
+    };
+  });
+}
 function openStatement(id) {
   const a = S.data.accounts[id]; const s = a.stmt || {};
   openSheet(a.name + " statement", `
@@ -701,7 +824,7 @@ function openStatement(id) {
   </div>
   <p class="hint" style="margin:0">Payments you log from the statement date onward count toward this bill.</p>
   <div class="err" id="s-err"></div>
-  <button type="button" class="btn primary block" id="s-save">Save statement</button>`, root => {
+  <button type="button" class="btn primary block" id="s-save">${ico("check")}Save statement</button>`, root => {
     root.querySelector("#s-save").onclick = () => {
       const E = m => root.querySelector("#s-err").textContent = m;
       const date = root.querySelector("#s-date").value, due = root.querySelector("#s-due").value;
@@ -717,26 +840,27 @@ function openAccount(id) {
   const a = id ? S.data.accounts[id] : {name: "", group: "bank", opening: 0};
   openSheet(id ? "Edit account" : "New account", `
   <label class="field"><span class="lbl">Name</span><input class="input" id="a-name" maxlength="40" value="${esc(a.name)}" placeholder="e.g. BPI savings"></label>
+  <div class="field"><span class="lbl">Type</span>${tilesHTML("grp", Object.entries(GROUPS).map(([k, g]) => [k, g.label, g.icon]), a.group)}</div>
   <div class="grid2">
-    <label class="field"><span class="lbl">Type</span><select class="select" id="a-group">${Object.entries(GROUPS).map(([k, g]) => `<option value="${k}"${k === a.group ? " selected" : ""}>${g.label}</option>`).join("")}</select></label>
     <label class="field"><span class="lbl" id="a-open-l">Starting balance</span><input class="input num" id="a-open" inputmode="decimal" placeholder="0.00" value="${amtVal(a.opening)}"></label>
+    <label class="field" id="a-limit-f"><span class="lbl">Credit limit</span><input class="input num" id="a-limit" inputmode="decimal" placeholder="Optional" value="${amtVal(a.limit)}"></label>
   </div>
-  <label class="field" id="a-limit-f"><span class="lbl">Credit limit (optional)</span><input class="input num" id="a-limit" inputmode="decimal" placeholder="0.00" value="${amtVal(a.limit)}"></label>
   ${id ? `<label class="chip" style="align-self:flex-start"><input type="checkbox" id="a-arch"${a.archived ? " checked" : ""}><span>Hide this account</span></label>` : ""}
   <p class="hint" style="margin:0">Starting balance is what the account held when you started tracking. For cards, it's what you owed.</p>
   <div class="err" id="a-err"></div>
-  <button type="button" class="btn primary block" id="a-save">${id ? "Save" : "Add account"}</button>`, root => {
-    const grp = root.querySelector("#a-group");
-    const sync = () => { const lib = GROUPS[grp.value].kind === "liability"; root.querySelector("#a-limit-f").hidden = !lib; root.querySelector("#a-open-l").textContent = lib ? "Owed when you started" : "Starting balance"; };
-    grp.onchange = sync; sync();
+  <button type="button" class="btn primary block" id="a-save">${ico("check")}${id ? "Save" : "Add account"}</button>`, root => {
+    const grp = () => val(root, "grp") || "bank";
+    const sync = () => { const lib = GROUPS[grp()].kind === "liability"; root.querySelector("#a-limit-f").hidden = !lib; root.querySelector("#a-open-l").textContent = lib ? "Owed at start" : "Starting balance"; };
+    root.querySelectorAll('input[name="grp"]').forEach(r => r.onchange = sync); sync();
     root.querySelector("#a-save").onclick = () => {
       const E = m => root.querySelector("#a-err").textContent = m;
       const name = root.querySelector("#a-name").value.trim(); if (!name) return E("Give the account a name.");
+      const g = grp();
       const oRaw = root.querySelector("#a-open").value.trim(), lRaw = root.querySelector("#a-limit").value.trim();
       const opening = oRaw ? parseAmt(oRaw) : 0, limit = lRaw ? parseAmt(lRaw) : 0;
       if (oRaw && opening == null && !isZeroish(oRaw)) return E("Starting balance must be a number.");
-      const rec = {...a, name, group: grp.value, opening: opening || 0};
-      if (GROUPS[grp.value].kind === "liability" && limit) rec.limit = limit; else delete rec.limit;
+      const rec = {...a, name, group: g, opening: opening || 0};
+      if (GROUPS[g].kind === "liability" && limit) rec.limit = limit; else delete rec.limit;
       const ar = root.querySelector("#a-arch"); if (ar) rec.archived = ar.checked;
       if (!id) rec.order = Object.keys(S.data.accounts).length;
       S.data.accounts[id || newId()] = rec; save(); closeSheet(); toast(id ? "Account saved" : "Account added");
@@ -746,20 +870,20 @@ function openAccount(id) {
 function openPerson(id, kindDefault) {
   const p = id ? S.data.people[id] : {name: "", kind: kindDefault || "rent", detail: "", monthly: 0, dueDay: 1, opening: 0};
   openSheet(id ? "Edit person" : "Add person", `
-  <div class="field"><span class="lbl">Why they owe you</span>${chipsHTML("kind", Object.entries(KINDS).map(([k, x]) => [k, x.label]), p.kind)}</div>
+  <div class="field"><span class="lbl">Why they owe you</span>${tilesHTML("kind", Object.entries(KINDS).map(([k, x]) => [k, x.label, x.icon]), p.kind)}</div>
   <div class="grid2">
     <label class="field"><span class="lbl">Name</span><input class="input" id="p-name" maxlength="50" value="${esc(p.name)}"></label>
     <label class="field"><span class="lbl" id="p-detail-l">Detail</span><input class="input" id="p-detail" maxlength="40" placeholder="Optional" value="${esc(p.detail || "")}"></label>
   </div>
   <div class="grid2" id="p-monthly-f">
     <label class="field"><span class="lbl">Monthly amount</span><input class="input num" id="p-monthly" inputmode="decimal" placeholder="0.00" value="${amtVal(p.monthly)}"></label>
-    <label class="field"><span class="lbl">Due day of month</span><input class="input num" id="p-day" type="number" min="1" max="31" value="${p.dueDay || 1}"></label>
+    <label class="field"><span class="lbl">Due day</span><input class="input num" id="p-day" type="number" min="1" max="31" value="${p.dueDay || 1}"></label>
   </div>
-  <label class="field"><span class="lbl" id="p-open-l">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
+  <label class="field"><span class="lbl">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
   <p class="hint" style="margin:0" id="p-hint"></p>
   ${id ? `<label class="chip" style="align-self:flex-start"><input type="checkbox" id="p-arch"${p.archived ? " checked" : ""}><span>Hide (moved out / settled)</span></label>` : ""}
   <div class="err" id="p-err"></div>
-  <button type="button" class="btn primary block" id="p-save">${id ? "Save" : "Add person"}</button>`, root => {
+  <button type="button" class="btn primary block" id="p-save">${ico("check")}${id ? "Save" : "Add person"}</button>`, root => {
     const sync = () => {
       const k = val(root, "kind") || "rent";
       root.querySelector("#p-monthly-f").hidden = !KINDS[k].monthly;
@@ -794,7 +918,17 @@ $("#mprev").onclick = () => { S.month = mShift(S.month, -1); render(); };
 $("#mnext").onclick = () => { S.month = mShift(S.month, 1); render(); };
 window.addEventListener("storage", e => { if (e.key === KEY) { S.data = load(); if (S.data) normalize(S.data); render(); } });
 render();
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("sw.js").catch(() => {}));
+if ("serviceWorker" in navigator) {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").then(r => r.update?.()).catch(() => {});
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if (!hadController || $("#upd")) return;
+    const b = document.createElement("div"); b.id = "upd"; b.className = "toast"; b.style.cssText = "display:flex;gap:12px;align-items:center";
+    b.innerHTML = `<span>New version ready</span><button type="button" class="btn primary">Refresh</button>`;
+    b.querySelector("button").onclick = () => location.reload();
+    $("#toast-root").replaceChildren(b);
+  });
+}
 })();
 </script>
 </body>

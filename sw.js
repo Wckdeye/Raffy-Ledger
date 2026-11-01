@@ -1,5 +1,5 @@
 // Raffy's Ledger service worker: lets the app open with no internet.
-const VERSION = "ledger-v1";
+const VERSION = "ledger-v2";
 const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
@@ -15,7 +15,18 @@ self.addEventListener("fetch", e => {
   const sameOrigin = url.origin === self.location.origin;
   const isFont = url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com";
   if (!sameOrigin && !isFont) return;
-  // Serve from cache right away, refresh the cache in the background.
+  if (req.mode === "navigate") {
+    // Page loads: try the network briefly so updates show when online, fall back to the saved copy offline.
+    e.respondWith(caches.open(VERSION).then(async cache => {
+      const cached = await cache.match("./index.html");
+      const net = fetch(req).then(res => { if (res.ok) cache.put("./index.html", res.clone()); return res; });
+      const timeout = new Promise(r => setTimeout(() => r(null), 3000));
+      try { const res = await Promise.race([net, timeout]); if (res) return res; } catch {}
+      return cached || net;
+    }));
+    return;
+  }
+  // Everything else: serve from cache right away, refresh the cache in the background.
   e.respondWith(caches.open(VERSION).then(async cache => {
     const key = req.mode === "navigate" ? "./index.html" : req;
     const cached = await cache.match(key);
