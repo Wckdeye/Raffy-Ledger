@@ -70,7 +70,7 @@ const CAT_ICON = {"Groceries":"cart","Baby":"baby","Fuel & transport":"fuel","Ut
   "Repairs & maintenance":"wrench","Property tax (amilyar)":"bill","Internet upstream":"router","Equipment & supplies":"box",
   "Gov't salary":"bank","Private work":"briefcase","Internet business":"wifi","Parents' allowance":"users","Other income":"pluscircle","Rental":"key"};
 const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk|school|tuition/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax|parts/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/repair|maint|fix/i,"wrench"],[/house|home/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge/i,"percent"],[/tax|amilyar|bir|permit/i,"bill"],[/equip|supply|supplies|tool/i,"box"],[/upstream|isp|bandwidth/i,"router"],[/salary|gov|payroll/i,"bank"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/rent/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
-const catIcon = c => CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
+const catIcon = c => (S && S.data && S.data.catIcons && S.data.catIcons[c]) || CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
 
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
@@ -161,7 +161,7 @@ const pName = id => S.data.people[id]?.name || "Someone";
 const pKind = id => S.data.people[id]?.kind || "other";
 const allTxns = () => Object.entries(S.data.txns).map(([id, t]) => ({...t, id}));
 const txnBiz = t => t.type === "expense" ? (t.biz || null)
-  : t.type === "income" ? (t.biz || (t.cat === "Internet business" ? "internet" : /rent/i.test(t.cat || "") ? "rental" : null))
+  : t.type === "income" ? (t.biz || (S.data.incomeBiz || {})[t.cat] || (t.cat === "Internet business" ? "internet" : /rent/i.test(t.cat || "") ? "rental" : null))
   : t.type === "ar_charge" ? KINDS[pKind(t.person)].biz : null;
 
 function compute() {
@@ -284,7 +284,15 @@ function budgetUse(cat, mk) {
 function goalProgress(g, bal) { const have = g.acct ? Math.max(0, bal[g.acct] || 0) : (g.saved || 0); return {have, pct: Math.min(1, have / g.target)}; }
 
 function putTxn(t) { const {id, ...body} = t; S.data.txns[id] = body; save(); }
-function delTxn(id) { delete S.data.txns[id]; save(); }
+function delTxn(id) { withUndo("Entry deleted", () => { delete S.data.txns[id]; }); }
+/* Snapshot the whole book, apply the change, offer Undo for 6 seconds. */
+function withUndo(label, fn) {
+  const snap = JSON.stringify(S.data); fn(); save();
+  const r = $("#toast-root"); clearTimeout(toastTimer);
+  r.innerHTML = `<div class="toast" role="status" style="display:flex;gap:12px;align-items:center"><span>${esc(label)}</span><button type="button" class="btn" id="undo">Undo</button></div>`;
+  r.querySelector("#undo").onclick = () => { S.data = JSON.parse(snap); save(); r.innerHTML = ""; toast("Restored"); };
+  toastTimer = setTimeout(() => r.innerHTML = "", 6000);
+}
 
 /* ================= UI primitives ================= */
 let toastTimer;
@@ -407,7 +415,7 @@ function renderHome(v) {
   ${installEvt && !standalone() ? `<div class="banner"><span>Install the app so it opens offline from your home screen.</span><button type="button" class="btn primary" id="install">${ico("install")}Install</button></div>` : ""}
   ${needBackup ? `<div class="banner warn"><span>${lb ? `Last backup ${-daysUntil(lb)} days ago.` : "You haven't backed up yet."} Your data lives only on this phone.</span><button type="button" class="btn" data-go="security">${ico("down")}Back up</button></div>` : ""}
   <section class="hero" aria-label="Net worth">
-    <div class="eyebrow">Net worth · today</div>
+    <div class="eyebrow">Net worth · as of today</div>
     <div class="big">${net < 0 ? "−" : ""}${esc(whole)}<small>.${cents}</small></div>
     <div class="hero-grid">
       <div><div class="k">${ico("wallet")}Cash &amp; bank</div><div class="v">${pesoShort(cash)}</div></div>
@@ -423,7 +431,7 @@ function renderHome(v) {
   </div>
   ${due.length ? `<section class="card"><div class="section-h"><h2>To confirm · ${due.length}</h2><button type="button" class="link" data-go="recurring">Recurring</button></div>${dueHTML(due, 5)}${due.length > 5 ? `<p class="hint" style="margin:8px 0 0">${due.length - 5} more in Recurring.</p>` : ""}</section>` : ""}
   <section class="card">
-    <div class="section-h"><h2>${esc(mName(S.month))} at a glance</h2><button type="button" class="link" data-go="reports">Reports</button></div>
+    <div class="section-h"><h2>${esc(mLabel(S.month, true))}</h2>${S.month !== mKey(today()) ? `<button type="button" class="btnchip" id="to-now">${ico("calendar")}Back to ${esc(mName(mKey(today())))}</button>` : `<button type="button" class="link" data-go="reports">Reports</button>`}</div>
     <div class="pl">
       <div><div class="v in">${pesoShort(m.tIn)}</div><div class="k">Income</div></div>
       <div><div class="v out">${pesoShort(m.tOut)}</div><div class="k">Expenses</div></div>
@@ -451,6 +459,7 @@ function renderHome(v) {
     ${recent.length ? `<div class="rows">${recent.map(txnRow).join("")}</div>` : `<p class="muted" style="margin:0">Nothing logged this month.</p>`}
   </section>`;
   wireRows(v); wireGo(v); wireDue(v);
+  const tn = $("#to-now"); if (tn) tn.onclick = () => { S.month = mKey(today()); render(); };
   v.querySelectorAll("[data-q]").forEach(b => b.onclick = () => {
     const q = b.dataset.q;
     if (q === "pay") { const first = dues[0]; openTxn({type: "transfer", to: first?.a.id || accounts().find(a => kindOf(a) === "liability")?.id, amt: first ? (first.loan ? first.a.monthly : first.st.left) : null}); }
@@ -512,7 +521,8 @@ function renderOwe(v) {
           <div><div class="k">Left to pay</div><div class="v ${st.left ? "out" : "in"}">${fmt(st.left)}</div></div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span><span class="muted" style="font-size:12.5px">${a.stmt.min ? `Min due ${fmt(a.stmt.min)} · ` : ""}due ${esc(dShort(a.stmt.due))}</span></div>`
-      : `<p class="hint" style="margin:0">Add this month's statement to track what's due and when.</p>`}
+      : `<p class="hint" style="margin:0">${suggestStatement(a) ? `Statement cut on ${esc(dShort(suggestStatement(a).date))}: about ${fmt(suggestStatement(a).bal)}. Tap Add statement to confirm it.` : "Add this month's statement to track what's due and when."}</p>`}
+      ${st && suggestStatement(a) && a.stmt.date < suggestStatement(a).date ? `<p class="hint" style="margin:0">A newer statement cut on ${esc(dShort(suggestStatement(a).date))}. Tap New statement to update.</p>` : ""}
       ${f ? `<div class="hint">Interest &amp; fees this month: <b class="out num">${fmt(f)}</b></div>` : ""}
       <div class="actions"><button type="button" class="btn primary" data-pay="${a.id}">${ico("swap")}Pay</button><button type="button" class="btn" data-stmt="${a.id}">${ico("bill")}${st ? "New statement" : "Add statement"}</button></div>
     </section>`; }).join("")}
@@ -716,7 +726,7 @@ function openGoal(id) {
       const rec = {...g, name, target: t.v, acct: val(root, "gacct") || "", by: root.querySelector("#g-by").value || ""};
       S.data.goals[id || newId()] = rec; save(); closeSheet(); toast(id ? "Goal saved" : "Goal added");
     };
-    const d = root.querySelector("#g-del"); if (d) armDelete(d, () => { delete S.data.goals[id]; save(); closeSheet(); toast("Goal deleted"); });
+    const d = root.querySelector("#g-del"); if (d) armDelete(d, () => { closeSheet(); withUndo("Goal deleted", () => { delete S.data.goals[id]; }); });
   });
 }
 function openGoalSaved(id) {
@@ -793,7 +803,7 @@ function openRecurring(id, tpl) {
       const p = root.querySelector("#r-pause"); if (p?.checked) rec.paused = true;
       S.data.recurring[id || newId()] = rec; save(); closeSheet(); toast(id ? "Saved" : "Recurring added");
     };
-    const d = root.querySelector("#r-del"); if (d) armDelete(d, () => { delete S.data.recurring[id]; delete S.data.skips[id]; save(); closeSheet(); toast("Deleted"); });
+    const d = root.querySelector("#r-del"); if (d) armDelete(d, () => { closeSheet(); withUndo("Recurring entry deleted", () => { delete S.data.recurring[id]; delete S.data.skips[id]; }); });
   });
 }
 
@@ -805,7 +815,7 @@ function renderAccounts(v) {
     return `<section class="card"><div class="section-h"><h2>${title}</h2><span class="muted num" style="font-size:13px">${fmt(xs.filter(a => !a.archived).reduce((s, a) => s + bal[a.id], 0))}</span></div><div class="rows">
     ${xs.map(a => `<button type="button" class="row" data-acc="${a.id}"><span class="tile ${kindOf(a) === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}${a.archived ? ' <span class="pill">Hidden</span>' : ""}</div><div class="s">${esc(GROUPS[a.group].label)} · start ${fmt(a.opening || 0)}</div></div><div class="a">${fmt(bal[a.id])}</div></button>`).join("")}</div></section>`; };
   const cats = S.data.cats;
-  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x">${ico(catIcon(c))}${esc(c)}<button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
+  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x"><button type="button" class="link" style="display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:500;padding:0" data-edcat="${k}:${i}" aria-label="Rename ${esc(c)}">${ico(catIcon(c))}${esc(c)}</button><button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
     <form class="inline-add" data-addcat="${k}"><input class="input" id="newcat-${k}" placeholder="Add a category" maxlength="40"><button class="btn" type="submit">Add</button></form></div>`;
   v.innerHTML = `
   <div class="grid2"><button type="button" class="btn" id="startbal">${ico("sliders")}Starting balances</button><button type="button" class="btn" id="addacc">${ico("pluscircle")}Add account</button></div>
@@ -813,11 +823,12 @@ function renderAccounts(v) {
   ${sect("Savings &amp; investments", a => a.group === "invest")}
   ${sect("Cards &amp; pay later", a => a.group === "card" || a.group === "bnpl")}
   ${sect("Loans I owe", a => a.group === "loan")}
-  <section class="card stack" style="gap:16px"><h2 style="font-size:16px">Categories</h2>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
+  <section class="card stack" style="gap:16px"><div><h2 style="font-size:16px">Categories</h2><p class="hint" style="margin:4px 0 0">Tap a category to rename it or change its icon.</p></div>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
   v.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => openAccount(b.dataset.acc));
   $("#addacc").onclick = () => openAccount();
   $("#startbal").onclick = openStartBalances;
-  v.querySelectorAll("[data-rmcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rmcat.split(":"); S.data.cats[k].splice(+i, 1); save(); });
+  v.querySelectorAll("[data-rmcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rmcat.split(":"); const n = S.data.cats[k][+i]; withUndo(`Removed "${n}". Old entries keep it`, () => { S.data.cats[k].splice(+i, 1); }); });
+  v.querySelectorAll("[data-edcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.edcat.split(":"); openCategory(k, +i); });
   v.querySelectorAll("[data-addcat]").forEach(f => f.onsubmit = e => { e.preventDefault(); const k = f.dataset.addcat; const n = f.querySelector("input").value.trim(); if (n && !S.data.cats[k].includes(n)) { S.data.cats[k].push(n); save(); } });
 }
 
@@ -1001,7 +1012,7 @@ function openTxn(o = {}) {
       putTxn(t); closeSheet(); toast(e ? "Saved" : o.rid ? "Logged" : "Added"); budgetNudge(t, before);
     };
     const del = root.querySelector("#f-del");
-    if (del) armDelete(del, () => { delTxn(e.id); closeSheet(); toast("Deleted"); });
+    if (del) armDelete(del, () => { closeSheet(); delTxn(e.id); });
   });
 }
 function openCharge(pid, edit) {
@@ -1025,7 +1036,7 @@ function openCharge(pid, edit) {
       if (loan) { t.acct = val(root, "acct"); if (!t.acct) return err("Pick the account the money came from."); const la = pref.get("lastAcct", {}); la.lend = t.acct; pref.set("lastAcct", la); }
       putTxn(t); closeSheet(); toast(edit ? "Saved" : loan ? "Loan recorded" : "Charged");
     };
-    const del = root.querySelector("#c-del"); if (del) armDelete(del, () => { delTxn(edit.id); closeSheet(); toast("Deleted"); });
+    const del = root.querySelector("#c-del"); if (del) armDelete(del, () => { closeSheet(); delTxn(edit.id); });
   });
 }
 function openPlan(id) {
@@ -1044,7 +1055,7 @@ function openPlan(id) {
   ${id ? "" : `<label class="check"><input type="checkbox" id="pl-log" checked>Also log the full purchase as an expense today</label><div id="pl-cat" class="stack" style="gap:16px"><div class="field"><span class="lbl">Category</span>${tilesHTML("pcat", S.data.cats.expense.map(c => [c, c, catIcon(c)]), "Shopping")}</div><div class="field"><span class="lbl">For</span>${bizChips("")}</div></div>`}
   <div class="err" id="pl-err"></div>
   <button type="button" class="btn primary block" id="pl-save">${ico("check")}${id ? "Save" : "Add plan"}</button>
-  ${id ? `<button type="button" class="btn danger block" id="pl-del">Delete plan</button>` : ""}`, root => {
+  ${id ? `<button type="button" class="btn danger block" id="pl-del">Delete plan</button><p class="hint" style="margin:0">Deleting the plan keeps the purchase expense in Activity. Delete that entry separately if you don't want it.</p>` : ""}`, root => {
     const lg = root.querySelector("#pl-log"); if (lg) lg.onchange = () => root.querySelector("#pl-cat").hidden = !lg.checked;
     root.querySelector("#pl-save").onclick = () => {
       const E = m => root.querySelector("#pl-err").textContent = m;
@@ -1059,7 +1070,33 @@ function openPlan(id) {
       if (lg?.checked) { const cat = val(root, "pcat") || "Shopping"; const b = val(root, "biz"); const t = {type: "expense", cat, acct, amt: tt.v, date: today(), at: Date.now(), note: name + " (installment)", plan: pid}; if (b) t.biz = b; S.data.txns[newId()] = t; }
       save(); closeSheet(); toast(id ? "Plan saved" : "Installment added");
     };
-    const d = root.querySelector("#pl-del"); if (d) armDelete(d, () => { delete S.data.plans[id]; save(); closeSheet(); toast("Plan deleted"); });
+    const d = root.querySelector("#pl-del"); if (d) armDelete(d, () => { closeSheet(); withUndo("Plan deleted. Its purchase entry stays in Activity", () => { delete S.data.plans[id]; }); });
+  });
+}
+const ICON_CHOICES = ["cart","food","baby","fuel","bolt","home","bag","health","user","users","repeat","gift","percent","bank","briefcase","wifi","router","key","cash","phone","card","trend","piggy","target","wrench","box","pulse","bill","loan","coins","layers","calendar","tag","dots"];
+function openCategory(k, i) {
+  const old = S.data.cats[k][i];
+  openSheet("Edit category", `
+  <label class="field"><span class="lbl">Name</span><input class="input" id="cat-name" maxlength="40" value="${esc(old)}"></label>
+  <div class="field"><span class="lbl">Icon</span><div class="tiles" role="radiogroup" style="grid-template-columns:repeat(6,minmax(0,1fr))">${ICON_CHOICES.map(n => `<label class="tpick"><input type="radio" name="cicon" value="${n}"${n === catIcon(old) ? " checked" : ""}><span style="min-height:48px">${ico(n)}</span></label>`).join("")}</div></div>
+  <p class="hint" style="margin:0">Renaming updates your past entries, budgets and recurring items too.</p>
+  <div class="err" id="cat-err"></div>
+  <button type="button" class="btn primary block" id="cat-save">${ico("check")}Save</button>`, root => {
+    root.querySelector("#cat-save").onclick = () => {
+      const nn = root.querySelector("#cat-name").value.trim(); if (!nn) return root.querySelector("#cat-err").textContent = "Give the category a name.";
+      const d = S.data; if (nn !== old && d.cats[k].includes(nn)) return root.querySelector("#cat-err").textContent = "You already have a category with that name.";
+      const icon = val(root, "cicon");
+      if (nn !== old) {
+        d.cats[k][i] = nn;
+        Object.values(d.txns).forEach(t => { if (t.cat === old && t.type === k) t.cat = nn; });
+        Object.values(d.recurring).forEach(r => { if (r.cat === old && r.type === k) r.cat = nn; });
+        if (k === "expense" && d.budgets[old] != null) { d.budgets[nn] = d.budgets[old]; delete d.budgets[old]; }
+        if (k === "income") { const b = (d.incomeBiz || {})[old] || (old === "Internet business" ? "internet" : /rent/i.test(old) ? "rental" : null); if (b) { d.incomeBiz = d.incomeBiz || {}; d.incomeBiz[nn] = b; delete d.incomeBiz[old]; } }
+        if (d.catIcons?.[old]) { d.catIcons[nn] = d.catIcons[old]; delete d.catIcons[old]; }
+      }
+      if (icon) { d.catIcons = d.catIcons || {}; d.catIcons[nn] = icon; }
+      save(); closeSheet(); toast(nn !== old ? `Renamed to ${nn}` : "Saved");
+    };
   });
 }
 function openStartBalances() {
@@ -1083,8 +1120,25 @@ function openStartBalances() {
     };
   });
 }
+function balanceAsOf(id, date) {
+  const a = S.data.accounts[id]; let b = a.opening || 0; const sg = kindOf(a) === "liability" ? -1 : 1;
+  for (const t of allTxns()) { if (t.date > date) continue;
+    if (t.type === "expense" && t.acct === id) b -= sg * t.amt; else if (t.type === "income" && t.acct === id) b += sg * t.amt;
+    else if (t.type === "transfer") { if (t.acct === id) b -= sg * t.amt; if (t.to === id) b += sg * t.amt; }
+    else if ((t.type === "ar_collect") && t.acct === id) b += sg * t.amt; else if (t.type === "ar_charge" && t.acct === id) b -= sg * t.amt; }
+  return b;
+}
+function suggestStatement(a) {
+  if (!a.cutDay) return null;
+  const t = today(); let mk = mKey(t); let cut = `${mk}-${pad(Math.min(a.cutDay, lastDay(mk)))}`;
+  if (cut > t) { mk = mShift(mk, -1); cut = `${mk}-${pad(Math.min(a.cutDay, lastDay(mk)))}`; }
+  let due = null;
+  if (a.payDay) { let dm = a.payDay > a.cutDay ? mk : mShift(mk, 1); due = `${dm}-${pad(Math.min(a.payDay, lastDay(dm)))}`; }
+  return {date: cut, due, bal: Math.max(0, balanceAsOf(a.id, cut))};
+}
 function openStatement(id) {
-  const a = S.data.accounts[id]; const s = a.stmt || {};
+  const a = S.data.accounts[id]; const sug = suggestStatement({...a, id}); const fresh = sug && (!a.stmt || a.stmt.date < sug.date);
+  const s = fresh ? {date: sug.date, due: sug.due, bal: sug.bal, min: 0} : (a.stmt || {});
   openSheet(a.name + " statement", `
   <div class="grid2">
     <label class="field"><span class="lbl">Statement date</span><input class="input" type="date" id="s-date" value="${s.date || today()}"></label>
@@ -1092,7 +1146,7 @@ function openStatement(id) {
     <label class="field"><span class="lbl">Statement balance</span><input class="input num" id="s-bal" inputmode="decimal" placeholder="0.00" value="${amtVal(s.bal)}"></label>
     <label class="field"><span class="lbl">Minimum due</span><input class="input num" id="s-min" inputmode="decimal" placeholder="0.00" value="${amtVal(s.min)}"></label>
   </div>
-  <p class="hint" style="margin:0">Payments you log from the statement date onward count toward this bill.</p>
+  <p class="hint" style="margin:0">${fresh ? `Pre-filled from your entries up to the ${esc(dShort(sug.date))} cut-off. Check it against your bill and fill in the minimum due.` : a.cutDay ? "" : "Tip: set this card's cut-off and due day in its account settings and statements will pre-fill."} Payments you log from the statement date onward count toward this bill.</p>
   <div class="err" id="s-err"></div>
   <button type="button" class="btn primary block" id="s-save">${ico("check")}Save statement</button>`, root => {
     root.querySelector("#s-save").onclick = () => {
@@ -1114,6 +1168,10 @@ function openAccount(id, groupDefault) {
     <label class="field"><span class="lbl" id="a-open-l">Starting balance</span><input class="input num" id="a-open" inputmode="decimal" placeholder="0.00" value="${amtVal(a.opening)}"></label>
     <label class="field" id="a-limit-f"><span class="lbl">Credit limit</span><input class="input num" id="a-limit" inputmode="decimal" placeholder="Optional" value="${amtVal(a.limit)}"></label>
   </div>
+  <div class="grid2" id="a-card-f">
+    <label class="field"><span class="lbl">Statement cut-off day</span><input class="input num" id="a-cut" type="number" min="1" max="31" placeholder="e.g. 5" value="${a.cutDay || ""}"></label>
+    <label class="field"><span class="lbl">Payment due day</span><input class="input num" id="a-pay" type="number" min="1" max="31" placeholder="e.g. 25" value="${a.payDay || ""}"></label>
+  </div>
   <div class="grid2" id="a-loan-f">
     <label class="field"><span class="lbl">Monthly amortization</span><input class="input num" id="a-monthly" inputmode="decimal" placeholder="0.00" value="${amtVal(a.monthly)}"></label>
     <label class="field"><span class="lbl">Due day</span><input class="input num" id="a-day" type="number" min="1" max="31" value="${a.dueDay || 1}"></label>
@@ -1124,7 +1182,7 @@ function openAccount(id, groupDefault) {
   <button type="button" class="btn primary block" id="a-save">${ico("check")}${id ? "Save" : "Add"}</button>`, root => {
     const grp = () => val(root, "grp") || "bank";
     const sync = () => { const g = grp(), lib = GROUPS[g].kind === "liability";
-      root.querySelector("#a-limit-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-loan-f").hidden = g !== "loan";
+      root.querySelector("#a-limit-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-card-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-loan-f").hidden = g !== "loan";
       root.querySelector("#a-open-l").textContent = g === "loan" ? "Balance at start" : lib ? "Owed at start" : "Starting balance";
       root.querySelector("#a-hint").textContent = g === "loan" ? "Enter the remaining loan balance when you started tracking. Pay it from I owe; you can split out the interest each time." : "Starting balance is what the account held when you started tracking. For cards, it's what you owed."; };
     root.querySelectorAll('input[name="grp"]').forEach(r => r.onchange = sync); sync();
@@ -1134,8 +1192,10 @@ function openAccount(id, groupDefault) {
       const g = grp();
       const o = readAmt(root, "#a-open", {label: "starting balance"}); if (o.err) return E(o.err);
       const rec = {...a, name, group: g, opening: o.v};
-      delete rec.limit; delete rec.monthly; delete rec.dueDay;
-      if (g === "card" || g === "bnpl") { const l = readAmt(root, "#a-limit", {label: "credit limit"}); if (l.err) return E(l.err); if (l.v) rec.limit = l.v; }
+      delete rec.limit; delete rec.monthly; delete rec.dueDay; delete rec.cutDay; delete rec.payDay;
+      if (g === "card" || g === "bnpl") { const l = readAmt(root, "#a-limit", {label: "credit limit"}); if (l.err) return E(l.err); if (l.v) rec.limit = l.v;
+        const dd = sel => { const n = parseInt(root.querySelector(sel).value, 10); return n >= 1 && n <= 31 ? n : 0; };
+        const c = dd("#a-cut"), pd = dd("#a-pay"); if (c) rec.cutDay = c; if (pd) rec.payDay = pd; }
       if (g === "loan") { const m = readAmt(root, "#a-monthly", {label: "monthly amortization"}); if (m.err) return E(m.err); if (m.v) rec.monthly = m.v; rec.dueDay = Math.min(31, Math.max(1, parseInt(root.querySelector("#a-day").value, 10) || 1)); }
       const ar = root.querySelector("#a-arch"); if (ar) rec.archived = ar.checked;
       if (!id) rec.order = Object.keys(S.data.accounts).length;
