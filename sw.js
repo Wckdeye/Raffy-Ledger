@@ -1,6 +1,6 @@
 // Raffy's Ledger service worker: lets the app open with no internet.
-const VERSION = "ledger-v2";
-const SHELL = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
+const VERSION = "ledger-v3";
+const SHELL = ["./", "./index.html", "./app.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

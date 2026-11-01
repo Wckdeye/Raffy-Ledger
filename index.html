@@ -222,12 +222,69 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 .sb-name{min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sb-name small{display:block;font-weight:500;font-size:11.5px;color:var(--muted)}
 .sb-list{display:flex;flex-direction:column;gap:10px}
+
+/* --- v3 additions --- */
+.top-l{display:flex;align-items:center;gap:6px;min-width:0}
+.top-l h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.backbtn{border:0;background:var(--surface);box-shadow:inset 0 0 0 1px var(--line);width:34px;height:34px;border-radius:11px;display:grid;place-items:center;color:var(--ink);flex:none}
+.backbtn .ic{width:18px;height:18px}
+.menu{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:4px 14px}
+.menu .row .chev{color:var(--muted);width:18px;height:18px}
+.prog{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;border-radius:99px;background:var(--accent)}
+.prog i.ok{background:var(--in)} .prog i.warn{background:var(--warn)} .prog i.bad{background:var(--out)}
+.brow{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:6px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line);background:none;border-left:0;border-right:0;border-bottom:0;width:100%;text-align:left}
+.brow:first-child{border-top:0}
+.brow .tile{grid-row:span 2}
+.brow .nm{font-weight:600;font-size:14px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brow .rt{font-family:var(--f-num);font-size:12.5px;color:var(--muted);white-space:nowrap}
+.brow .prog{grid-column:2/-1}
+.due-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.due-row:first-child{border-top:0}
+.due-row .main{flex:1;min-width:0;background:none;border:0;text-align:left;padding:0}
+.iconbtn{border:0;width:36px;height:36px;border-radius:11px;display:grid;place-items:center;flex:none;background:var(--surface-2);color:var(--muted)}
+.iconbtn.go{background:color-mix(in srgb,var(--in) 16%,transparent);color:var(--in)}
+.iconbtn .ic{width:18px;height:18px}
+.search{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:0 12px}
+.search:focus-within{border-color:var(--accent)}
+.search .ic{color:var(--muted);width:18px;height:18px}
+.search input{border:0;background:none;outline:none;padding:11px 0;width:100%;min-width:0}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--f-num);font-size:10px;fill:var(--muted)}
+.chart .bi{fill:var(--in)} .chart .bo{fill:var(--out)} .chart .gl{stroke:var(--line);stroke-width:1}
+.stmt-tbl{display:flex;flex-direction:column}
+.stmt-tbl .ln{display:flex;justify-content:space-between;gap:12px;padding:7px 0;font-size:14px;border-top:1px solid var(--line)}
+.stmt-tbl .ln:first-child{border-top:0}
+.stmt-tbl .ln span:last-child{font-family:var(--f-num);font-variant-numeric:tabular-nums;white-space:nowrap}
+.stmt-tbl .ln.sub{color:var(--muted);font-size:13px;padding-left:12px}
+.stmt-tbl .ln.tot{font-weight:700;border-top:1px solid var(--ink)}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kv div{min-width:0}
+.kv .k{font-size:11.5px;color:var(--muted)}
+.kv .v{font-family:var(--f-num);font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lock{position:fixed;inset:0;z-index:100;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  padding:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px))}
+.lock h2{font-size:20px}
+.pdots{display:flex;gap:14px;height:16px}
+.pdots i{width:14px;height:14px;border-radius:99px;border:1.5px solid var(--muted)}
+.pdots i.on{background:var(--accent);border-color:var(--accent)}
+.pdots.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}}
+.keypad{display:grid;grid-template-columns:repeat(3,72px);gap:14px}
+.keypad button{height:72px;border-radius:99px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-num);font-size:24px;font-weight:500}
+.keypad button:active{background:var(--surface-2)}
+.keypad .ghost{border:0;background:none;font-family:var(--f-body);font-size:14px;color:var(--muted)}
+.seg2{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
+.seg2 button{border:0;background:none;border-radius:9px;padding:8px 4px;font-weight:600;font-size:13px;color:var(--muted)}
+.seg2 button[aria-pressed="true"]{background:var(--surface-2);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.check{display:flex;align-items:center;gap:10px;font-size:14px}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <h1 id="title">Ledger</h1>
+    <div class="top-l"><button type="button" class="backbtn" id="back" aria-label="Back" hidden></button><h1 id="title">Ledger</h1></div>
     <div class="mswitch" id="mswitch" hidden>
       <button type="button" id="mprev" aria-label="Previous month">‹</button>
       <span id="mlabel"></span>
@@ -236,700 +293,12 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
   </header>
   <main id="view" class="stack"></main>
 </div>
-
 <button type="button" class="fab" id="fab" aria-label="Add entry" hidden></button>
 <nav class="nav" id="nav" hidden><div class="nav-in" id="nav-in"></div></nav>
 <div id="sheet-root"></div>
 <div id="toast-root"></div>
+<div id="lock-root"></div>
 <input type="file" id="importfile" accept="application/json,.json" hidden>
-
-<script>
-(() => {
-"use strict";
-/* ---------- icons ---------- */
-const P = {
-  cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.2 11.2a1.6 1.6 0 0 0 1.6 1.3h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6"/>',
-  baby:'<circle cx="12" cy="12" r="8"/><path d="M9.3 11h.01M14.7 11h.01M9.6 14.6a3.3 3.3 0 0 0 4.8 0M12 4c-1 1.3-.7 2.6.7 3.1"/>',
-  fuel:'<path d="M4 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16M3 21h12M4 10h10M14 8l3.5 3.5V17a1.5 1.5 0 0 0 3 0V9l-3-3"/>',
-  bolt:'<path d="M13 2.5 4.5 13.5H12l-1 8 8.5-11H12z"/>',
-  food:'<path d="M5 3v7a2.5 2.5 0 0 0 5 0V3M7.5 3v18M17 21V3c-2.2 1-3.5 3.6-3.5 7.5 0 1.4.7 2.5 1.8 2.5H17"/>',
-  home:'<path d="M3.5 11 12 4l8.5 7M5.5 9.5V20h13V9.5M10 20v-5.5h4V20"/>',
-  bag:'<path d="M5 8h14l-1 12.5H6zM9 8V6.5a3 3 0 0 1 6 0V8"/>',
-  health:'<path d="M20.5 9.5c0 5.5-8.5 10.5-8.5 10.5S3.5 15 3.5 9.5A4.5 4.5 0 0 1 12 7a4.5 4.5 0 0 1 8.5 2.5z"/><path d="M7 12h2.5l1.5-2.5 2 5 1.5-2.5H17"/>',
-  user:'<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/>',
-  users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5a6.5 6.5 0 0 1 3.5 5.5"/>',
-  repeat:'<path d="M17 2.5 20.5 6 17 9.5M3.5 11.5V10a4 4 0 0 1 4-4h13M7 21.5 3.5 18 7 14.5M20.5 12.5V14a4 4 0 0 1-4 4h-13"/>',
-  gift:'<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8.5h14V12M12 8v12.5M12 8S10.5 3.5 8 4.2C6 4.8 7 8 12 8zm0 0s1.5-4.5 4-3.8C18 4.8 17 8 12 8z"/>',
-  percent:'<path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>',
-  dots:'<circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/>',
-  landmark:'<path d="M3 20.5h18M4.5 9.5h15M12 3l8 4.5H4zM6.5 9.5v8M10 9.5v8M14 9.5v8M17.5 9.5v8"/>',
-  briefcase:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1.5 1.5 0 0 1 1.5-1.5h3A1.5 1.5 0 0 1 15 5v2M3 12.5h18"/>',
-  wifi:'<path d="M2.5 9a14 14 0 0 1 19 0M5.5 12.5a9.5 9.5 0 0 1 13 0M8.5 16a5 5 0 0 1 7 0"/><circle cx="12" cy="19.5" r=".9"/>',
-  plus:'<path d="M12 5v14M5 12h14"/>',
-  pluscircle:'<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
-  key:'<circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.3-8.3M16.5 6.5l2.5 2.5M14 9l2 2"/>',
-  cash:'<rect x="2.5" y="6" width="19" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9.5v.01M18 14.5v.01"/>',
-  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
-  trend:'<path d="m3 17 6-6 4 4 8-8M15 7h6v6"/>',
-  card:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
-  later:'<path d="M5 8h14l-.5 5M9 8V6.5a3 3 0 0 1 6 0V8M6 8l-1 12.5h6"/><circle cx="17.5" cy="17.5" r="4"/><path d="M17.5 15.6v2l1.3 1"/>',
-  out:'<path d="M7 17 17 7M8 7h9v9"/>',
-  in:'<path d="M17 7 7 17M16 17H7V8"/>',
-  swap:'<path d="M4 8h15M15 4l4 4-4 4M20 16H5M9 12l-4 4 4 4"/>',
-  coins:'<ellipse cx="9" cy="6.5" rx="5.5" ry="2.5"/><path d="M3.5 6.5v4c0 1.4 2.5 2.5 5.5 2.5s5.5-1.1 5.5-2.5v-4M3.5 10.5v4c0 1.4 2.5 2.5 5.5 2.5 1 0 1.9-.1 2.7-.3"/><circle cx="16.5" cy="16" r="4.5"/><path d="M16.5 14v4"/>',
-  bill:'<path d="M6 2.5h12v19l-3-2-3 2-3-2-3 2z"/><path d="M9 7.5h6M9 11.5h6M9 15.5h3.5"/>',
-  tag:'<path d="M3 12V4.5A1.5 1.5 0 0 1 4.5 3H12l9 9-9 9z"/><circle cx="7.5" cy="7.5" r="1.3"/>',
-  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13.5 6.5 4 4"/>',
-  down:'<path d="M12 3.5v12M7 10.5l5 5 5-5M4 20.5h16"/>',
-  up:'<path d="M12 15.5v-12M7 8.5l5-5 5 5M4 20.5h16"/>',
-  table:'<rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 9.5h17M3.5 15h17M9.5 3.5v17"/>',
-  sliders:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
-  grid:'<rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/>',
-  list:'<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
-  wallet:'<path d="M4 7.5V18a2 2 0 0 0 2 2h14V9.5H6A2 2 0 0 1 4 7.5zm0 0A2.5 2.5 0 0 1 6.5 5H17"/><path d="M16 14.5h.01"/>',
-  bank:'<path d="M3 20.5h18M4.5 9.5h15M12 3l8 4.5H4zM6.5 9.5v8M10 9.5v8M14 9.5v8M17.5 9.5v8"/>',
-  pulse:'<path d="M3 12h4l2.5-6 5 12 2.5-6h4"/>',
-  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
-  install:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M12 7v7M9 11l3 3 3-3"/>',
-};
-const ico = (n, cls) => `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true">${P[n] || P.tag}</svg>`;
-const CAT_ICON = {"Groceries":"cart","Baby":"baby","Fuel & transport":"fuel","Utilities & load":"bolt","Food & dining":"food","Household":"home","Shopping":"bag","Health":"health","Personal":"user","Subscriptions":"repeat","Family & gifts":"gift","Interest & fees":"percent","Other":"dots",
-  "Gov't salary":"landmark","Private work":"briefcase","Internet business":"wifi","Parents' allowance":"users","Other income":"pluscircle","Rental":"key"};
-const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/house|home|repair/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge|tax/i,"percent"],[/salary|gov|payroll/i,"landmark"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/rent/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
-const catIcon = c => CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
-
-/* ---------- helpers ---------- */
-const $ = s => document.querySelector(s);
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const pad = n => String(n).padStart(2, "0");
-const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-const fmt = c => "₱" + (Math.abs(c) / 100).toLocaleString("en-PH", {minimumFractionDigits: 2, maximumFractionDigits: 2});
-const pesoShort = c => { const n = Math.abs(c) / 100; const s = n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n.toLocaleString("en-PH", {maximumFractionDigits: 0}); return (c < 0 ? "−" : "") + "₱" + s; };
-const parseAmt = s => { const n = Number(String(s ?? "").replace(/[₱,\s]/g, "")); return isFinite(n) && n > 0 ? Math.round(n * 100) : null; };
-const isZeroish = s => Number(String(s).replace(/[₱,\s]/g, "")) === 0;
-const toISO = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
-const today = () => toISO(new Date());
-const parseISO = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
-const daysUntil = iso => Math.round((parseISO(iso) - parseISO(today())) / 864e5);
-const mKey = iso => iso.slice(0, 7);
-const mShift = (mk, n) => { const [y, m] = mk.split("-").map(Number); return toISO(new Date(y, m - 1 + n, 1)).slice(0, 7); };
-const mLabel = (mk, long) => { const [y, m] = mk.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleString("en-PH", {month: long ? "long" : "short", year: "numeric"}); };
-const mName = mk => { const [y, m] = mk.split("-").map(Number); return new Date(y, m - 1, 1).toLocaleString("en-PH", {month: "long"}); };
-const dLabel = iso => parseISO(iso).toLocaleDateString("en-PH", {weekday: "short", month: "short", day: "numeric"});
-const dShort = iso => parseISO(iso).toLocaleDateString("en-PH", {month: "short", day: "numeric"});
-const clone = o => JSON.parse(JSON.stringify(o));
-const pref = { get(k, d) { try { const v = localStorage.getItem("ledger-pref:" + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
-               set(k, v) { try { localStorage.setItem("ledger-pref:" + k, JSON.stringify(v)); } catch {} } };
-
-const GROUPS = {
-  cash: {label: "Cash", kind: "asset", icon: "cash"}, bank: {label: "Bank", kind: "asset", icon: "bank"}, ewallet: {label: "E-wallet", kind: "asset", icon: "phone"},
-  invest: {label: "Investment", kind: "asset", icon: "trend"}, card: {label: "Credit card", kind: "liability", icon: "card"}, bnpl: {label: "Pay later", kind: "liability", icon: "later"},
-};
-const KINDS = {
-  rent: {label: "Rent", income: "Rental", charge: "Bill rent", monthly: true, icon: "key"},
-  internet: {label: "Internet", income: "Internet business", charge: "Bill", monthly: true, icon: "wifi"},
-  loan: {label: "Loan", income: null, charge: "Lend more", monthly: false, icon: "coins"},
-  other: {label: "Other", income: "Other income", charge: "Charge", monthly: false, icon: "user"},
-};
-const DEFAULT_ACCOUNTS = [
-  ["cash", "Cash on hand", "cash"], ["bank", "Bank account", "bank"], ["gcash", "GCash", "ewallet"], ["pj", "Pickle Jar capital", "invest"],
-  ["mb", "Metrobank card", "card"], ["ub", "UnionBank card", "card"], ["rcbc", "RCBC card", "card"], ["spl", "SPayLater", "bnpl"],
-];
-const DEFAULT_CATS = {
-  income: ["Gov't salary", "Private work", "Internet business", "Parents' allowance", "Other income"],
-  expense: ["Groceries", "Baby", "Fuel & transport", "Utilities & load", "Food & dining", "Household", "Shopping", "Health", "Personal", "Subscriptions", "Family & gifts", "Interest & fees", "Other"],
-};
-const NAV = [["home", "Home", "grid"], ["activity", "Activity", "list"], ["cards", "Cards", "card"], ["owed", "Owed to me", "coins"], ["accounts", "Accounts", "wallet"]];
-const TYPES = [["expense", "Expense", "out"], ["income", "Income", "in"], ["transfer", "Transfer", "swap"], ["collect", "Got paid", "coins"]];
-
-/* ---------- storage (on this phone) ---------- */
-const KEY = "raffy-ledger-v1";
-const S = { data: null, view: pref.get("view", "home"), month: mKey(today()), filter: "all", pfilter: "all" };
-function load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch { return null; } }
-function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(S.data)); }
-  catch (e) { toast("Couldn't save on this phone. Storage may be full — export a backup.", true); }
-  render();
-}
-function normalize(d) {
-  d.accounts = d.accounts || {}; d.people = d.people || {}; d.txns = d.txns || {};
-  d.cats = d.cats || clone(DEFAULT_CATS); d.cats.income = d.cats.income || []; d.cats.expense = d.cats.expense || [];
-  return d;
-}
-S.data = load(); if (S.data) normalize(S.data);
-if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
-
-const accounts = all => Object.entries(S.data.accounts).map(([id, a]) => ({id, ...a})).filter(a => all || !a.archived).sort((a, b) => (a.order ?? 99) - (b.order ?? 99) || a.name.localeCompare(b.name));
-const people = all => Object.entries(S.data.people).map(([id, p]) => ({id, ...p})).filter(p => all || !p.archived).sort((a, b) => a.name.localeCompare(b.name));
-const kindOf = a => GROUPS[a?.group]?.kind || "asset";
-const accName = id => S.data.accounts[id]?.name || "Deleted account";
-const accIcon = id => GROUPS[S.data.accounts[id]?.group]?.icon || "wallet";
-const pName = id => S.data.people[id]?.name || "Someone";
-const pKind = id => S.data.people[id]?.kind || "other";
-const allTxns = () => Object.entries(S.data.txns).map(([id, t]) => ({...t, id}));
-
-function compute() {
-  const A = S.data.accounts, bal = {}, rec = {};
-  for (const id in A) bal[id] = A[id].opening || 0;
-  for (const id in S.data.people) rec[id] = S.data.people[id].opening || 0;
-  const ap = (id, d) => { if (id in bal) bal[id] += kindOf(A[id]) === "liability" ? -d : d; };
-  for (const t of allTxns()) {
-    if (t.type === "expense") ap(t.acct, -t.amt);
-    else if (t.type === "income") ap(t.acct, t.amt);
-    else if (t.type === "transfer") { ap(t.acct, -t.amt); ap(t.to, t.amt); }
-    else if (t.type === "ar_charge") { if (t.person in rec) rec[t.person] += t.amt; if (t.acct) ap(t.acct, -t.amt); }
-    else if (t.type === "ar_collect") { ap(t.acct, t.amt); if (t.person in rec) rec[t.person] -= t.amt; }
-  }
-  return {bal, rec};
-}
-function monthStats(mk) {
-  const inc = {}, exp = {}; let collected = 0, lent = 0;
-  for (const t of allTxns()) {
-    if (!t.date?.startsWith(mk)) continue;
-    if (t.type === "expense") exp[t.cat] = (exp[t.cat] || 0) + t.amt;
-    else if (t.type === "income") inc[t.cat] = (inc[t.cat] || 0) + t.amt;
-    else if (t.type === "ar_charge") { const k = KINDS[pKind(t.person)]; if (k.income) inc[k.income] = (inc[k.income] || 0) + t.amt; else lent += t.amt; }
-    else if (t.type === "ar_collect") collected += t.amt;
-  }
-  const sum = o => Object.values(o).reduce((a, b) => a + b, 0);
-  return {inc, exp, tIn: sum(inc), tOut: sum(exp), collected, lent};
-}
-function aging(pid) {
-  const p = S.data.people[pid]; const tx = allTxns().filter(x => x.person === pid);
-  const charges = [];
-  if (p.opening) charges.push({prior: true, amt: p.opening});
-  tx.filter(x => x.type === "ar_charge").sort((a, b) => a.date.localeCompare(b.date)).forEach(x => charges.push({date: x.date, amt: x.amt}));
-  let credit = tx.filter(x => x.type === "ar_collect").reduce((s, x) => s + x.amt, 0);
-  const b = [0, 0, 0];
-  for (const c of charges) {
-    const use = Math.min(credit, c.amt); credit -= use; const left = c.amt - use;
-    if (!left) continue;
-    const age = c.prior ? 999 : -daysUntil(c.date);
-    b[age <= 30 ? 0 : age <= 60 ? 1 : 2] += left;
-  }
-  const last = tx.filter(x => x.type === "ar_collect").sort((a, b) => b.date.localeCompare(a.date))[0];
-  return {b, last};
-}
-function cardStatus(a) {
-  const st = a.stmt; if (!st) return null;
-  const paid = allTxns().filter(t => t.type === "transfer" && t.to === a.id && t.date >= st.date).reduce((s, t) => s + t.amt, 0);
-  const left = Math.max(0, st.bal - paid), minLeft = Math.max(0, (st.min || 0) - paid), d = daysUntil(st.due);
-  let pill;
-  if (left === 0) pill = ["ok", "Paid in full"];
-  else if (d < 0) pill = ["bad", `Overdue ${-d}d`];
-  else if (d === 0) pill = ["bad", "Due today"];
-  else if (d <= 5) pill = ["warn", `Due in ${d}d`];
-  else pill = ["", `Due ${dShort(st.due)}`];
-  return {paid, left, minLeft, d, pill};
-}
-function putTxn(t) { const {id, ...body} = t; S.data.txns[id] = body; save(); }
-function delTxn(id) { delete S.data.txns[id]; save(); }
-
-/* ---------- UI primitives ---------- */
-let toastTimer;
-function toast(msg, bad) {
-  const r = $("#toast-root"); r.innerHTML = `<div class="toast${bad ? " bad" : ""}" role="status">${esc(msg)}</div>`;
-  clearTimeout(toastTimer); toastTimer = setTimeout(() => r.innerHTML = "", bad ? 4200 : 2000);
-}
-function closeSheet() { $("#sheet-root").innerHTML = ""; document.body.style.overflow = ""; }
-function openSheet(title, html, mount) {
-  const r = $("#sheet-root");
-  r.innerHTML = `<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-in"><div class="grab"></div><div class="sheet-h"><h2>${esc(title)}</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>${html}</div></div>`;
-  document.body.style.overflow = "hidden";
-  r.querySelectorAll("[data-close]").forEach(b => b.onclick = closeSheet);
-  mount?.(r.querySelector(".sheet-in"));
-}
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
-const chipsHTML = (name, items, sel) => `<div class="chips" role="radiogroup">${items.map(([v, l, ic]) => `<label class="chip"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${ic ? ico(ic) : ""}${esc(l)}</span></label>`).join("")}</div>`;
-const tilesHTML = (name, items, sel) => `<div class="tiles" role="radiogroup">${items.map(([v, l, ic]) => `<label class="tpick"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${ico(ic)}${esc(l)}</span></label>`).join("")}</div>`;
-const accChips = filt => accounts().filter(filt).map(a => [a.id, a.name, GROUPS[a.group].icon]);
-const val = (root, name) => root.querySelector(`input[name="${name}"]:checked`)?.value || null;
-const amtVal = c => c ? (c / 100).toFixed(2) : "";
-function download(name, text, type) {
-  const u = URL.createObjectURL(new Blob([text], {type})); const a = document.createElement("a");
-  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 3000);
-}
-
-/* ---------- render ---------- */
-$("#nav-in").innerHTML = NAV.map(([k, l, ic]) => `<button type="button" data-v="${k}">${ico(ic)}${l}</button>`).join("");
-$("#fab").innerHTML = ico("plus");
-function render() {
-  const v = $("#view"); const ready = !!S.data;
-  $("#nav").hidden = !ready; $("#fab").hidden = !ready;
-  document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === S.view ? "page" : "false"));
-  $("#mswitch").hidden = !(ready && (S.view === "home" || S.view === "activity"));
-  $("#mlabel").textContent = mLabel(S.month);
-  if (!ready) return renderSetup(v);
-  const titles = {home: "Ledger", activity: "Activity", cards: "Cards", owed: "Owed to me", accounts: "Accounts"};
-  if (!titles[S.view]) S.view = "home";
-  $("#title").textContent = titles[S.view];
-  ({home: renderHome, activity: renderActivity, cards: renderCards, owed: renderOwed, accounts: renderAccounts})[S.view](v);
-}
-
-function txnRow(t) {
-  let title, sub, amt, cls = "", icon;
-  if (t.type === "expense") { title = t.cat; sub = accName(t.acct); amt = "−" + fmt(t.amt); cls = "out"; icon = catIcon(t.cat); }
-  else if (t.type === "income") { title = t.cat; sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = catIcon(t.cat); }
-  else if (t.type === "transfer") { const toLib = kindOf(S.data.accounts[t.to]) === "liability"; title = toLib ? "Paid " + accName(t.to) : "Transfer"; sub = accName(t.acct) + " → " + accName(t.to); amt = fmt(t.amt); icon = toLib ? accIcon(t.to) : "swap"; }
-  else if (t.type === "ar_charge") { const k = pKind(t.person), loan = k === "loan"; title = (loan ? "Lent to " : "Billed ") + pName(t.person); sub = loan ? "From " + accName(t.acct) : KINDS[k].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; icon = loan ? "coins" : "bill"; }
-  else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = KINDS[pKind(t.person)].icon; }
-  if (t.note) sub += " · " + t.note;
-  return `<button type="button" class="row" data-tx="${esc(t.id)}"><span class="tile t-${t.type}">${ico(icon)}</span><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}</div></button>`;
-}
-function wireRows(root) {
-  root.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => {
-    const t = S.data.txns[b.dataset.tx]; if (!t) return; const tx = {...t, id: b.dataset.tx};
-    tx.type === "ar_charge" ? openCharge(tx.person, tx) : openTxn({edit: tx});
-  });
-}
-const barsHTML = (obj, inc) => {
-  const rows = Object.entries(obj).sort((a, b) => b[1] - a[1]); const max = rows[0]?.[1] || 1;
-  return `<div class="bars">${rows.map(([k, v]) => `<div class="bar-row"><span class="tile sm t-${inc ? "income" : "expense"}">${ico(catIcon(k))}</span><span class="nm">${esc(k)}</span><span class="amt">${fmt(v)}</span><div class="bar-track"><div class="bar-fill${inc ? " inc" : ""}" style="width:${Math.max(2, v / max * 100).toFixed(1)}%"></div></div></div>`).join("")}</div>`;
-};
-
-let installEvt = null;
-window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; if (S.view === "home") render(); });
-const standalone = () => matchMedia("(display-mode: standalone)").matches || navigator.standalone;
-
-function renderHome(v) {
-  const {bal, rec} = compute();
-  const accs = accounts(true);
-  const cash = accs.filter(a => kindOf(a) === "asset" && a.group !== "invest").reduce((s, a) => s + bal[a.id], 0);
-  const inv = accs.filter(a => a.group === "invest").reduce((s, a) => s + bal[a.id], 0);
-  const owed = accs.filter(a => kindOf(a) === "liability").reduce((s, a) => s + bal[a.id], 0);
-  const recv = Object.values(rec).reduce((s, x) => s + x, 0);
-  const net = cash + inv + recv - owed;
-  const m = monthStats(S.month);
-  const dues = accounts().filter(a => kindOf(a) === "liability").map(a => ({a, st: cardStatus(a)})).filter(x => x.st && x.st.left > 0).sort((x, y) => x.st.d - y.st.d);
-  const recent = allTxns().filter(t => t.date.startsWith(S.month)).sort((a, b) => b.date.localeCompare(a.date) || (b.at || 0) - (a.at || 0)).slice(0, 6);
-  const [whole, cents] = fmt(net).split(".");
-  const n = Object.keys(S.data.txns).length;
-  const lb = S.data.lastBackup; const needBackup = n >= 5 && (!lb || -daysUntil(lb) > 14);
-  v.innerHTML = `
-  ${installEvt && !standalone() ? `<div class="banner"><span>Install the app so it opens offline from your home screen.</span><button type="button" class="btn primary" id="install">${ico("install")}Install</button></div>` : ""}
-  ${needBackup ? `<div class="banner warn"><span>${lb ? `Last backup ${-daysUntil(lb)} days ago.` : "You haven't backed up yet."} Your data lives only on this phone.</span><button type="button" class="btn" data-go="accounts">${ico("down")}Back up</button></div>` : ""}
-  <section class="hero" aria-label="Net worth">
-    <div class="eyebrow">Net worth · today</div>
-    <div class="big">${net < 0 ? "−" : ""}${esc(whole)}<small>.${cents}</small></div>
-    <div class="hero-grid">
-      <div><div class="k">${ico("wallet")}Cash &amp; bank</div><div class="v">${pesoShort(cash)}</div></div>
-      <div><div class="k">${ico("coins")}Owed to me</div><div class="v in">${pesoShort(recv)}</div></div>
-      <div><div class="k">${ico("card")}I owe</div><div class="v out">${pesoShort(owed)}</div></div>
-    </div>
-  </section>
-  <div class="quick">
-    <button type="button" data-q="expense"><span class="tile t-expense">${ico("out")}</span>Expense</button>
-    <button type="button" data-q="income"><span class="tile t-income">${ico("in")}</span>Income</button>
-    <button type="button" data-q="pay"><span class="tile t-transfer">${ico("card")}</span>Pay card</button>
-    <button type="button" data-q="collect"><span class="tile t-ar_collect">${ico("coins")}</span>Got paid</button>
-  </div>
-  <section class="card">
-    <div class="section-h"><h2>${esc(mName(S.month))} at a glance</h2><span class="eyebrow">P&amp;L</span></div>
-    <div class="pl">
-      <div><div class="v in">${pesoShort(m.tIn)}</div><div class="k">Income</div></div>
-      <div><div class="v out">${pesoShort(m.tOut)}</div><div class="k">Expenses</div></div>
-      <div><div class="v ${m.tIn - m.tOut < 0 ? "out" : ""}">${pesoShort(m.tIn - m.tOut)}</div><div class="k">Net</div></div>
-    </div>
-    ${m.collected || m.lent ? `<div class="note">Collected ${fmt(m.collected)} from people who owe you${m.lent ? ` · lent out ${fmt(m.lent)}` : ""}</div>` : ""}
-  </section>
-  ${dues.length ? `<section class="card"><div class="section-h"><h2>Coming due</h2><button type="button" class="link" data-go="cards">Cards</button></div><div class="rows">
-    ${dues.map(({a, st}) => `<div class="row"><span class="tile t-transfer">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}</div><div class="s">Left ${fmt(st.left)}${st.minLeft ? ` · min ${fmt(st.minLeft)}` : ""}</div></div><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span></div>`).join("")}
-  </div></section>` : ""}
-  <section class="card">
-    <div class="section-h"><h2>Where it went</h2><span class="muted num" style="font-size:13px">${fmt(m.tOut)}</span></div>
-    ${Object.keys(m.exp).length ? barsHTML(m.exp) : `<p class="muted" style="margin:0">No expenses in ${esc(mName(S.month))} yet. Tap Expense above to log one.</p>`}
-  </section>
-  <section class="card">
-    <div class="section-h"><h2>Income streams</h2><span class="muted num" style="font-size:13px">${fmt(m.tIn)}</span></div>
-    ${Object.keys(m.inc).length ? barsHTML(m.inc, true) : `<p class="muted" style="margin:0">No income logged in ${esc(mName(S.month))} yet.</p>`}
-  </section>
-  <section class="card">
-    <div class="section-h"><h2>Recent</h2><button type="button" class="link" data-go="activity">See all</button></div>
-    ${recent.length ? `<div class="rows">${recent.map(txnRow).join("")}</div>` : `<p class="muted" style="margin:0">Nothing logged this month.</p>`}
-  </section>`;
-  wireRows(v); v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
-  v.querySelectorAll("[data-q]").forEach(b => b.onclick = () => {
-    const q = b.dataset.q;
-    if (q === "pay") { const card = accounts().find(a => kindOf(a) === "liability" && cardStatus(a)?.left) || accounts().find(a => kindOf(a) === "liability"); const st = card && cardStatus(card); openTxn({type: "transfer", to: card?.id, amt: st?.left || null}); }
-    else openTxn({type: q});
-  });
-  const ib = $("#install"); if (ib) ib.onclick = async () => { installEvt.prompt(); await installEvt.userChoice.catch(() => {}); installEvt = null; render(); };
-}
-
-function renderActivity(v) {
-  const m = monthStats(S.month);
-  const F = [["all", "All", "list"], ["expense", "Expenses", "out"], ["income", "Income", "in"], ["transfer", "Transfers", "swap"], ["ar", "Owed to me", "coins"]];
-  const list = allTxns().filter(t => t.date.startsWith(S.month)).filter(t => S.filter === "all" || (S.filter === "ar" ? t.type.startsWith("ar_") : t.type === S.filter))
-    .sort((a, b) => b.date.localeCompare(a.date) || (b.at || 0) - (a.at || 0));
-  const days = {}; list.forEach(t => (days[t.date] = days[t.date] || []).push(t));
-  v.innerHTML = `
-  <section class="card"><div class="pl">
-    <div><div class="v in">${pesoShort(m.tIn)}</div><div class="k">Income</div></div>
-    <div><div class="v out">${pesoShort(m.tOut)}</div><div class="k">Expenses</div></div>
-    <div><div class="v">${pesoShort(m.tIn - m.tOut)}</div><div class="k">Net</div></div>
-  </div></section>
-  <div class="filters">${F.map(([k, l, ic]) => `<button type="button" class="btnchip" data-f="${k}" aria-pressed="${S.filter === k}">${ico(ic)}${l}</button>`).join("")}</div>
-  <section class="card" style="padding-block:4px 10px">
-    ${list.length ? Object.entries(days).map(([d, ts]) => `<div class="day-h">${esc(dLabel(d))}</div><div class="rows">${ts.map(txnRow).join("")}</div>`).join("")
-      : `<div class="empty" style="padding:22px 8px"><p style="margin:0">Nothing here for ${esc(mLabel(S.month, true))}.</p></div>`}
-  </section>`;
-  v.querySelectorAll("[data-f]").forEach(b => b.onclick = () => { S.filter = b.dataset.f; render(); });
-  wireRows(v);
-}
-
-function renderCards(v) {
-  const {bal} = compute();
-  const libs = accounts().filter(a => kindOf(a) === "liability");
-  const total = libs.reduce((s, a) => s + bal[a.id], 0);
-  const mk = mKey(today());
-  const fees = id => allTxns().filter(t => t.type === "expense" && t.acct === id && t.cat === "Interest & fees" && t.date.startsWith(mk)).reduce((s, t) => s + t.amt, 0);
-  v.innerHTML = `
-  <section class="hero"><div class="eyebrow">Total I owe</div><div class="big out" style="font-size:30px">${fmt(total)}</div><p class="hint" style="margin:8px 0 0">Tap Pay to log a payment from your bank. It's a transfer, so it won't count as an expense twice.</p></section>
-  ${libs.length ? libs.map(a => {
-    const st = cardStatus(a); const f = fees(a.id);
-    return `<section class="card cc">
-      <div class="cc-top"><div class="cc-id"><span class="tile t-transfer">${ico(GROUPS[a.group].icon)}</span><div><h3>${esc(a.name)}</h3><div class="muted" style="font-size:12.5px">${esc(GROUPS[a.group].label)}${a.limit ? ` · ${pesoShort(Math.max(0, a.limit - bal[a.id]))} available` : ""}</div></div></div>
-        <div class="cc-owed"><div class="v">${fmt(bal[a.id])}</div><div class="muted" style="font-size:12px">balance now</div></div></div>
-      ${st ? `<div class="stmt">
-          <div><div class="k">Statement</div><div class="v">${fmt(a.stmt.bal)}</div></div>
-          <div><div class="k">Paid since</div><div class="v">${fmt(st.paid)}</div></div>
-          <div><div class="k">Left to pay</div><div class="v ${st.left ? "out" : "in"}">${fmt(st.left)}</div></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="pill ${st.pill[0]}">${esc(st.pill[1])}</span><span class="muted" style="font-size:12.5px">${a.stmt.min ? `Min due ${fmt(a.stmt.min)} · ` : ""}due ${esc(dShort(a.stmt.due))}</span></div>`
-      : `<p class="hint" style="margin:0">Add this month's statement to track what's due and when.</p>`}
-      ${f ? `<div class="hint">Interest &amp; fees this month: <b class="out num">${fmt(f)}</b></div>` : ""}
-      <div class="actions"><button type="button" class="btn primary" data-pay="${a.id}">${ico("swap")}Pay</button><button type="button" class="btn" data-stmt="${a.id}">${ico("bill")}${st ? "New statement" : "Add statement"}</button></div>
-    </section>`; }).join("")
-  : `<div class="empty"><h2>No cards yet</h2><p>Add credit cards and pay-later accounts in Accounts.</p></div>`}`;
-  v.querySelectorAll("[data-pay]").forEach(b => b.onclick = () => { const st = cardStatus({...S.data.accounts[b.dataset.pay], id: b.dataset.pay}); openTxn({type: "transfer", to: b.dataset.pay, amt: st?.left || null}); });
-  v.querySelectorAll("[data-stmt]").forEach(b => b.onclick = () => openStatement(b.dataset.stmt));
-}
-
-function renderOwed(v) {
-  const {rec} = compute();
-  const ps = people().filter(p => S.pfilter === "all" || p.kind === S.pfilter);
-  const ag = Object.fromEntries(people(true).map(p => [p.id, aging(p.id)]));
-  const tot = [0, 0, 0]; ps.forEach(p => ag[p.id].b.forEach((x, i) => tot[i] += x));
-  const total = ps.reduce((s, p) => s + Math.max(0, rec[p.id]), 0);
-  const mk = mKey(today());
-  const billed = new Set(allTxns().filter(t => t.type === "ar_charge" && t.period === mk).map(t => t.person));
-  const pending = people().filter(p => KINDS[p.kind].monthly && p.monthly && !billed.has(p.id));
-  const sumB = tot[0] + tot[1] + tot[2];
-  const F = [["all", "All", "users"], ["rent", "Rent", "key"], ["internet", "Internet", "wifi"], ["loan", "Loans", "coins"], ["other", "Other", "user"]];
-  v.innerHTML = `
-  <section class="hero">
-    <div class="eyebrow">${S.pfilter === "all" ? "Total owed to me" : esc(KINDS[S.pfilter].label) + " · owed to me"}</div>
-    <div class="big in" style="font-size:30px">${fmt(total)}</div>
-    <div class="aging" aria-hidden="true">${sumB ? tot.map((x, i) => x ? `<span class="a${i}" style="flex:${x}"></span>` : "").join("") : `<span style="flex:1;background:var(--surface-2)"></span>`}</div>
-    <div class="legend"><span><i class="a0"></i>0–30d ${pesoShort(tot[0])}</span><span><i class="a1"></i>31–60d ${pesoShort(tot[1])}</span><span><i class="a2"></i>60d+ ${pesoShort(tot[2])}</span></div>
-  </section>
-  <div class="filters">${F.map(([k, l, ic]) => `<button type="button" class="btnchip" data-pf="${k}" aria-pressed="${S.pfilter === k}">${ico(ic)}${l}</button>`).join("")}</div>
-  ${pending.length ? `<button type="button" class="btn primary block" id="billall">${ico("bill")}Bill ${esc(mName(mk))} · ${pending.length} ${pending.length > 1 ? "people" : "person"}</button>` : ""}
-  ${ps.map(p => { const a = ag[p.id], r = rec[p.id], k = KINDS[p.kind]; return `<section class="card cc">
-    <div class="cc-top"><div class="cc-id"><span class="tile ${r > 0 ? "t-ar_charge" : "t-income"}">${ico(k.icon)}</span><div><h3>${esc(p.name)}</h3><div class="muted" style="font-size:12.5px">${esc(k.label)}${p.detail ? " · " + esc(p.detail) : ""}${k.monthly && p.monthly ? ` · ${pesoShort(p.monthly)}/mo · day ${p.dueDay || 1}` : ""}</div></div></div>
-      <div class="cc-owed"><div class="v ${r > 0 ? "out" : ""}">${fmt(r)}</div><div class="muted" style="font-size:12px">${r < 0 ? "paid ahead" : r === 0 ? "settled" : "owes you"}</div></div></div>
-    ${r > 0 ? `<div class="chips">${a.b[0] ? `<span class="pill ok">0–30d ${pesoShort(a.b[0])}</span>` : ""}${a.b[1] ? `<span class="pill warn">31–60d ${pesoShort(a.b[1])}</span>` : ""}${a.b[2] ? `<span class="pill bad">60d+ ${pesoShort(a.b[2])}</span>` : ""}</div>` : ""}
-    <div class="hint">${a.last ? `Last paid ${fmt(a.last.amt)} on ${esc(dShort(a.last.date))}` : "No payments recorded yet"}</div>
-    <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">${ico("coins")}Got paid</button><button type="button" class="btn" data-charge="${p.id}">${ico(p.kind === "loan" ? "out" : "bill")}${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}" aria-label="Edit ${esc(p.name)}">${ico("edit")}</button></div>
-  </section>`; }).join("")}
-  ${ps.length ? "" : `<div class="empty"><h2>${S.pfilter === "all" ? "Who owes you?" : "No one here yet"}</h2><p>Add tenants, internet subscribers, or anyone you've lent money to. Each gets a running balance and aging.</p></div>`}
-  <button type="button" class="btn block" id="addperson">${ico("pluscircle")}Add person</button>
-  <p class="hint" style="margin:0">Rent and internet bills count as income when billed. A loan doesn't: it moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
-  v.querySelectorAll("[data-pf]").forEach(b => b.onclick = () => { S.pfilter = b.dataset.pf; render(); });
-  $("#addperson").onclick = () => openPerson(null, S.pfilter !== "all" ? S.pfilter : "rent");
-  const ba = $("#billall"); if (ba) ba.onclick = () => billMonth(pending, mk);
-  v.querySelectorAll("[data-collect]").forEach(b => b.onclick = () => openTxn({type: "collect", person: b.dataset.collect}));
-  v.querySelectorAll("[data-charge]").forEach(b => b.onclick = () => openCharge(b.dataset.charge));
-  v.querySelectorAll("[data-person]").forEach(b => b.onclick = () => openPerson(b.dataset.person));
-}
-function billMonth(list, mk) {
-  const [y, m] = mk.split("-").map(Number); const last = new Date(y, m, 0).getDate();
-  list.forEach(p => { S.data.txns[newId()] = {type: "ar_charge", person: p.id, amt: p.monthly, date: `${mk}-${pad(Math.min(p.dueDay || 1, last))}`, period: mk, at: Date.now()}; });
-  save(); toast(`Billed ${list.length} for ${mName(mk)}`);
-}
-
-function renderAccounts(v) {
-  const {bal} = compute();
-  const accs = accounts(true);
-  const sect = (title, filter) => { const xs = accs.filter(filter); if (!xs.length) return "";
-    return `<section class="card"><div class="section-h"><h2>${title}</h2><span class="muted num" style="font-size:13px">${fmt(xs.filter(a => !a.archived).reduce((s, a) => s + bal[a.id], 0))}</span></div><div class="rows">
-    ${xs.map(a => `<button type="button" class="row" data-acc="${a.id}"><span class="tile ${kindOf(a) === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}${a.archived ? ' <span class="pill">Hidden</span>' : ""}</div><div class="s">${esc(GROUPS[a.group].label)} · start ${fmt(a.opening || 0)}</div></div><div class="a">${fmt(bal[a.id])}</div></button>`).join("")}</div></section>`; };
-  const cats = S.data.cats;
-  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x">${ico(catIcon(c))}${esc(c)}<button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
-    <form class="inline-add" data-addcat="${k}"><input class="input" id="newcat-${k}" placeholder="Add a category" maxlength="40"><button class="btn" type="submit">Add</button></form></div>`;
-  const lb = S.data.lastBackup;
-  v.innerHTML = `
-  <div class="grid2"><button type="button" class="btn" id="startbal">${ico("sliders")}Starting balances</button><button type="button" class="btn" id="addacc">${ico("pluscircle")}Add account</button></div>
-  ${sect("Cash, bank &amp; e-wallets", a => ["cash", "bank", "ewallet"].includes(a.group))}
-  ${sect("Investments", a => a.group === "invest")}
-  ${sect("Cards &amp; pay later", a => kindOf(a) === "liability")}
-  <p class="hint" style="margin:0">Pickle Jar sales stay in its own app. Log money you put in as a transfer to Pickle Jar capital, and money you take out as a transfer back.</p>
-  <section class="card stack" style="gap:12px">
-    <div class="section-h" style="margin:0"><h2>Backup</h2><span class="hint">${lb ? "Last: " + esc(dShort(lb)) : "Never backed up"}</span></div>
-    <p class="hint" style="margin:0">Everything is stored only on this phone. Export a backup now and then and keep it in Google Drive or Messenger to yourself. If you change phones, import it there.</p>
-    <div class="actions"><button type="button" class="btn primary" id="exportjson">${ico("down")}Export backup</button><button type="button" class="btn" id="importbtn">${ico("up")}Import</button><button type="button" class="btn" id="exportcsv">${ico("table")}CSV</button></div>
-    <div id="importconfirm"></div>
-  </section>
-  <section class="card stack" style="gap:16px"><h2 style="font-size:16px">Categories</h2>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
-  v.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => openAccount(b.dataset.acc));
-  $("#addacc").onclick = () => openAccount();
-  $("#startbal").onclick = openStartBalances;
-  v.querySelectorAll("[data-rmcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rmcat.split(":"); S.data.cats[k].splice(+i, 1); save(); });
-  v.querySelectorAll("[data-addcat]").forEach(f => f.onsubmit = e => { e.preventDefault(); const k = f.dataset.addcat; const n = f.querySelector("input").value.trim(); if (n && !S.data.cats[k].includes(n)) { S.data.cats[k].push(n); save(); } });
-  $("#exportjson").onclick = () => { S.data.lastBackup = today(); download(`ledger-backup-${today()}.json`, JSON.stringify({app: "raffy-ledger", version: 1, exported: new Date().toISOString(), data: S.data}), "application/json"); save(); toast("Backup saved to Downloads"); };
-  $("#exportcsv").onclick = exportCSV;
-  $("#importbtn").onclick = () => $("#importfile").click();
-}
-$("#importfile").onchange = async e => {
-  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
-  let parsed; try { parsed = JSON.parse(await f.text()); } catch { return toast("That file isn't a ledger backup.", true); }
-  const d = parsed?.data; if (!d || typeof d !== "object" || !d.accounts) return toast("That file isn't a ledger backup.", true);
-  const box = $("#importconfirm"); if (!box) return;
-  box.innerHTML = `<div class="banner warn" style="flex-wrap:wrap"><span>Replace everything on this phone with this backup (${Object.keys(d.txns || {}).length} entries${parsed.exported ? ", from " + esc(dShort(parsed.exported.slice(0, 10))) : ""})?</span><div class="actions"><button type="button" class="btn danger" id="doimport">Replace</button><button type="button" class="btn" id="noimport">Cancel</button></div></div>`;
-  $("#noimport").onclick = () => box.innerHTML = "";
-  $("#doimport").onclick = () => { S.data = normalize(d); save(); toast("Backup restored"); };
-};
-function exportCSV() {
-  const q = s => `"${String(s ?? "").replace(/"/g, '""')}"`;
-  const lines = [["Date", "Type", "Category", "Account", "To account", "Person", "Amount", "Note"].join(",")];
-  allTxns().sort((a, b) => a.date.localeCompare(b.date)).forEach(t => lines.push([t.date, t.type, q(t.cat), q(t.acct ? accName(t.acct) : ""), q(t.to ? accName(t.to) : ""), q(t.person ? pName(t.person) : ""), (t.amt / 100).toFixed(2), q(t.note)].join(",")));
-  download(`ledger-${today()}.csv`, lines.join("\n"), "text/csv"); toast("CSV saved to Downloads");
-}
-
-/* ---------- setup ---------- */
-function renderSetup(v) {
-  $("#title").textContent = "Set up";
-  v.innerHTML = `
-  <section class="card stack" style="gap:14px">
-    <div><h2 style="font-size:19px">Set up your books</h2><p class="muted" style="margin:6px 0 0">Enter what each account holds today. For cards and SPayLater, enter what you currently owe. Leave blank if zero. You can change any of these later in Accounts → Starting balances.</p></div>
-    ${DEFAULT_ACCOUNTS.map(([id, name, g]) => `<div class="setup-row"><span class="tile sm ${GROUPS[g].kind === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[g].icon)}</span><input class="input" id="sn-${id}" value="${esc(name)}" aria-label="Account name"><input class="input num" id="so-${id}" inputmode="decimal" placeholder="${GROUPS[g].kind === "liability" ? "Owed 0.00" : "0.00"}" aria-label="${esc(name)} balance"></div>`).join("")}
-    <div class="err" id="setup-err"></div>
-    <button type="button" class="btn primary block" id="setup-go">${ico("check")}Create my books</button>
-    <button type="button" class="btn block" id="setup-import">${ico("up")}Restore from a backup instead</button>
-  </section>
-  <div id="importconfirm"></div>`;
-  $("#setup-import").onclick = () => $("#importfile").click();
-  $("#setup-go").onclick = () => {
-    const accs = {}; let bad = false;
-    DEFAULT_ACCOUNTS.forEach(([id, name, g], i) => {
-      const raw = $("#so-" + id).value.trim(); const amt = raw ? parseAmt(raw) : 0;
-      if (raw && amt == null && !isZeroish(raw)) bad = true;
-      accs[id] = {name: $("#sn-" + id).value.trim() || name, group: g, opening: amt || 0, order: i};
-    });
-    if (bad) { $("#setup-err").textContent = "One of the balances isn't a number. Use digits like 12,500.00."; return; }
-    S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today()});
-    save(); toast("Books created");
-  };
-}
-
-/* ---------- sheets ---------- */
-function openTxn(o = {}) {
-  const e = o.edit;
-  let type = e ? (e.type === "ar_collect" ? "collect" : e.type) : (o.type || pref.get("lastType", "expense"));
-  const last = pref.get("lastAcct", {});
-  const html = `
-  <div class="seg" role="group" aria-label="Type">${TYPES.map(([k, l, ic]) => `<button type="button" data-type="${k}" aria-pressed="${k === type}">${ico(ic)}${l}</button>`).join("")}</div>
-  <div class="amt-wrap"><span>₱</span><input class="amt-input" id="f-amt" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${amtVal(e?.amt || o.amt)}" aria-label="Amount"></div>
-  <div id="f-dyn" class="stack" style="gap:16px"></div>
-  <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="f-date" value="${e?.date || today()}"></label>
-    <label class="field"><span class="lbl">Note</span><input class="input" id="f-note" maxlength="80" placeholder="Optional" value="${esc(e?.note || "")}"></label></div>
-  <div class="err" id="f-err" role="alert"></div>
-  <button type="button" class="btn primary block" id="f-save">${ico("check")}${e ? "Save changes" : "Save"}</button>
-  ${e ? `<button type="button" class="btn danger block" id="f-del">Delete</button>` : ""}`;
-  openSheet(e ? "Edit entry" : "New entry", html, root => {
-    const sel = {cat: e?.cat, acct: e?.acct, to: e?.to || o.to, person: e?.person || o.person};
-    const dyn = root.querySelector("#f-dyn");
-    const capture = () => ["cat", "acct", "to", "person"].forEach(k => { const x = val(dyn, k); if (x) sel[k] = x; });
-    function draw() {
-      const all = accChips(() => true), assets = accChips(a => kindOf(a) === "asset");
-      if (type === "expense") dyn.innerHTML = `<div class="field"><span class="lbl">Category</span>${tilesHTML("cat", S.data.cats.expense.map(c => [c, c, catIcon(c)]), sel.cat)}</div><div class="field"><span class="lbl">Paid with</span>${chipsHTML("acct", all, sel.acct || last.expense)}</div>`;
-      else if (type === "income") dyn.innerHTML = `<div class="field"><span class="lbl">Income stream</span>${tilesHTML("cat", S.data.cats.income.map(c => [c, c, catIcon(c)]), sel.cat)}</div><div class="field"><span class="lbl">Received in</span>${chipsHTML("acct", all, sel.acct || last.income)}</div>`;
-      else if (type === "transfer") dyn.innerHTML = `<div class="field"><span class="lbl">From</span>${chipsHTML("acct", all, sel.acct || last.transfer)}</div><div class="field"><span class="lbl">To</span>${chipsHTML("to", all, sel.to)}</div><p class="hint" style="margin:0">Paying a card or SPayLater? From your bank, to the card. Putting money into Pickle Jar? To Pickle Jar capital.</p>`;
-      else if (type === "collect") { const ps = people().map(p => [p.id, p.name, KINDS[p.kind].icon]);
-        dyn.innerHTML = ps.length ? `<div class="field"><span class="lbl">Who paid you</span>${chipsHTML("person", ps, sel.person)}</div><div class="field"><span class="lbl">Deposited to</span>${chipsHTML("acct", assets, sel.acct || last.collect)}</div>` : `<p class="hint" style="margin:0">Add people in the "Owed to me" tab first.</p>`; }
-    }
-    draw();
-    root.querySelectorAll("[data-type]").forEach(b => b.onclick = () => { capture(); type = b.dataset.type; root.querySelectorAll("[data-type]").forEach(x => x.setAttribute("aria-pressed", x === b)); root.querySelector("#f-err").textContent = ""; draw(); });
-    const amtI = root.querySelector("#f-amt"); if (!e && !o.amt) setTimeout(() => amtI.focus(), 60);
-    root.querySelector("#f-save").onclick = () => {
-      const err = m => root.querySelector("#f-err").textContent = m;
-      const amt = parseAmt(amtI.value); if (!amt) return err("Enter an amount greater than zero.");
-      const date = root.querySelector("#f-date").value; if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return err("Pick a date.");
-      const note = root.querySelector("#f-note").value.trim(); const g = k => val(dyn, k);
-      const t = {id: e?.id || newId(), amt, date, at: e?.at || Date.now()}; if (note) t.note = note;
-      if (type === "expense" || type === "income") { t.type = type; t.cat = g("cat"); t.acct = g("acct"); if (!t.cat) return err("Pick a category."); if (!t.acct) return err("Pick an account."); }
-      else if (type === "transfer") { t.type = "transfer"; t.acct = g("acct"); t.to = g("to"); if (!t.acct || !t.to) return err("Pick both accounts."); if (t.acct === t.to) return err("From and To must be different accounts."); }
-      else if (type === "collect") { t.type = "ar_collect"; t.person = g("person"); t.acct = g("acct"); if (!t.person) return err("Pick who paid you."); if (!t.acct) return err("Pick where you deposited it."); }
-      if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
-      putTxn(t); closeSheet(); toast(e ? "Saved" : "Added");
-    };
-    const del = root.querySelector("#f-del");
-    if (del) { let armed = false; del.onclick = () => { if (!armed) { armed = true; del.textContent = "Tap again to delete"; return; } delTxn(e.id); closeSheet(); toast("Deleted"); }; }
-  });
-}
-function openCharge(pid, edit) {
-  const p = S.data.people[pid]; const loan = p.kind === "loan";
-  const last = pref.get("lastAcct", {});
-  openSheet(edit ? "Edit charge" : (loan ? "Lend to " : "Charge ") + p.name, `
-  <div class="amt-wrap"><span>₱</span><input class="amt-input" id="c-amt" inputmode="decimal" placeholder="0.00" value="${amtVal(edit?.amt || (!loan && p.monthly) || 0)}" aria-label="Amount"></div>
-  ${loan ? `<div class="field"><span class="lbl">Lent from</span>${chipsHTML("acct", accChips(a => kindOf(a) === "asset"), edit?.acct || last.lend)}</div>` : `<p class="hint" style="margin:0">Counts as ${esc(KINDS[p.kind].income)} income on this date and adds to what ${esc(p.name)} owes you.</p>`}
-  <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="c-date" value="${edit?.date || today()}"></label>
-    <label class="field"><span class="lbl">Note</span><input class="input" id="c-note" maxlength="80" placeholder="Optional" value="${esc(edit?.note || "")}"></label></div>
-  <div class="err" id="c-err"></div>
-  <button type="button" class="btn primary block" id="c-save">${ico("check")}${edit ? "Save changes" : "Save"}</button>
-  ${edit ? `<button type="button" class="btn danger block" id="c-del">Delete</button>` : ""}`, root => {
-    root.querySelector("#c-save").onclick = () => {
-      const err = m => root.querySelector("#c-err").textContent = m;
-      const amt = parseAmt(root.querySelector("#c-amt").value); if (!amt) return err("Enter an amount greater than zero.");
-      const date = root.querySelector("#c-date").value; if (!date) return err("Pick a date.");
-      const t = {id: edit?.id || newId(), type: "ar_charge", person: pid, amt, date, at: edit?.at || Date.now()};
-      if (edit?.period) t.period = edit.period;
-      const note = root.querySelector("#c-note").value.trim(); if (note) t.note = note;
-      if (loan) { t.acct = val(root, "acct"); if (!t.acct) return err("Pick the account the money came from."); const la = pref.get("lastAcct", {}); la.lend = t.acct; pref.set("lastAcct", la); }
-      putTxn(t); closeSheet(); toast(edit ? "Saved" : loan ? "Loan recorded" : "Charged");
-    };
-    const del = root.querySelector("#c-del");
-    if (del) { let armed = false; del.onclick = () => { if (!armed) { armed = true; del.textContent = "Tap again to delete"; return; } delTxn(edit.id); closeSheet(); toast("Deleted"); }; }
-  });
-}
-function openStartBalances() {
-  const accs = accounts(true), ps = people(true);
-  const row = (attr, id, icon, cls, name, sub, v) => `<label class="sb-row"><span class="tile sm ${cls}">${ico(icon)}</span><span class="sb-name">${esc(name)}<small>${sub}</small></span><input class="input num" ${attr}="${id}" inputmode="decimal" placeholder="0.00" value="${amtVal(v)}" aria-label="${esc(name)} starting amount"></label>`;
-  openSheet("Starting balances", `
-  <p class="hint" style="margin:0">What each account held when you started tracking. For cards and pay later, what you owed. Changing a starting balance shifts its current balance by the same amount; your entries stay as they are.</p>
-  <div class="lbl">Accounts</div>
-  <div class="sb-list">${accs.map(a => row("data-sba", a.id, GROUPS[a.group].icon, kindOf(a) === "liability" ? "t-expense" : "t-transfer", a.name, kindOf(a) === "liability" ? "Owed at start" : "Held at start", a.opening)).join("")}</div>
-  ${ps.length ? `<div class="lbl">Already owed to you at start</div><div class="sb-list">${ps.map(p => row("data-sbp", p.id, KINDS[p.kind].icon, "t-ar_charge", p.name, KINDS[p.kind].label, p.opening)).join("")}</div>` : ""}
-  <div class="err" id="sb-err"></div>
-  <button type="button" class="btn primary block" id="sb-save">${ico("check")}Save balances</button>`, root => {
-    root.querySelector("#sb-save").onclick = () => {
-      let bad = null; const A = {}, Pp = {};
-      const read = (sel, out) => root.querySelectorAll(`[${sel}]`).forEach(i => { const r = i.value.trim(); const v = r ? parseAmt(r) : 0; if (r && v == null && !isZeroish(r)) bad = bad || i; out[i.getAttribute(sel)] = v || 0; });
-      read("data-sba", A); read("data-sbp", Pp);
-      if (bad) { root.querySelector("#sb-err").textContent = "One of the amounts isn't a number. Use digits like 12,500.00."; bad.focus(); return; }
-      for (const k in A) if (S.data.accounts[k]) S.data.accounts[k].opening = A[k];
-      for (const k in Pp) if (S.data.people[k]) S.data.people[k].opening = Pp[k];
-      save(); closeSheet(); toast("Starting balances updated");
-    };
-  });
-}
-function openStatement(id) {
-  const a = S.data.accounts[id]; const s = a.stmt || {};
-  openSheet(a.name + " statement", `
-  <div class="grid2">
-    <label class="field"><span class="lbl">Statement date</span><input class="input" type="date" id="s-date" value="${s.date || today()}"></label>
-    <label class="field"><span class="lbl">Payment due</span><input class="input" type="date" id="s-due" value="${s.due || ""}"></label>
-    <label class="field"><span class="lbl">Statement balance</span><input class="input num" id="s-bal" inputmode="decimal" placeholder="0.00" value="${amtVal(s.bal)}"></label>
-    <label class="field"><span class="lbl">Minimum due</span><input class="input num" id="s-min" inputmode="decimal" placeholder="0.00" value="${amtVal(s.min)}"></label>
-  </div>
-  <p class="hint" style="margin:0">Payments you log from the statement date onward count toward this bill.</p>
-  <div class="err" id="s-err"></div>
-  <button type="button" class="btn primary block" id="s-save">${ico("check")}Save statement</button>`, root => {
-    root.querySelector("#s-save").onclick = () => {
-      const E = m => root.querySelector("#s-err").textContent = m;
-      const date = root.querySelector("#s-date").value, due = root.querySelector("#s-due").value;
-      const bal = parseAmt(root.querySelector("#s-bal").value), minRaw = root.querySelector("#s-min").value.trim(), min = minRaw ? parseAmt(minRaw) : 0;
-      if (!date || !due) return E("Enter both the statement date and the due date.");
-      if (!bal) return E("Enter the statement balance.");
-      if (minRaw && min == null && !isZeroish(minRaw)) return E("Minimum due must be a number.");
-      a.stmt = {date, due, bal, min: min || 0}; save(); closeSheet(); toast("Statement saved");
-    };
-  });
-}
-function openAccount(id) {
-  const a = id ? S.data.accounts[id] : {name: "", group: "bank", opening: 0};
-  openSheet(id ? "Edit account" : "New account", `
-  <label class="field"><span class="lbl">Name</span><input class="input" id="a-name" maxlength="40" value="${esc(a.name)}" placeholder="e.g. BPI savings"></label>
-  <div class="field"><span class="lbl">Type</span>${tilesHTML("grp", Object.entries(GROUPS).map(([k, g]) => [k, g.label, g.icon]), a.group)}</div>
-  <div class="grid2">
-    <label class="field"><span class="lbl" id="a-open-l">Starting balance</span><input class="input num" id="a-open" inputmode="decimal" placeholder="0.00" value="${amtVal(a.opening)}"></label>
-    <label class="field" id="a-limit-f"><span class="lbl">Credit limit</span><input class="input num" id="a-limit" inputmode="decimal" placeholder="Optional" value="${amtVal(a.limit)}"></label>
-  </div>
-  ${id ? `<label class="chip" style="align-self:flex-start"><input type="checkbox" id="a-arch"${a.archived ? " checked" : ""}><span>Hide this account</span></label>` : ""}
-  <p class="hint" style="margin:0">Starting balance is what the account held when you started tracking. For cards, it's what you owed.</p>
-  <div class="err" id="a-err"></div>
-  <button type="button" class="btn primary block" id="a-save">${ico("check")}${id ? "Save" : "Add account"}</button>`, root => {
-    const grp = () => val(root, "grp") || "bank";
-    const sync = () => { const lib = GROUPS[grp()].kind === "liability"; root.querySelector("#a-limit-f").hidden = !lib; root.querySelector("#a-open-l").textContent = lib ? "Owed at start" : "Starting balance"; };
-    root.querySelectorAll('input[name="grp"]').forEach(r => r.onchange = sync); sync();
-    root.querySelector("#a-save").onclick = () => {
-      const E = m => root.querySelector("#a-err").textContent = m;
-      const name = root.querySelector("#a-name").value.trim(); if (!name) return E("Give the account a name.");
-      const g = grp();
-      const oRaw = root.querySelector("#a-open").value.trim(), lRaw = root.querySelector("#a-limit").value.trim();
-      const opening = oRaw ? parseAmt(oRaw) : 0, limit = lRaw ? parseAmt(lRaw) : 0;
-      if (oRaw && opening == null && !isZeroish(oRaw)) return E("Starting balance must be a number.");
-      const rec = {...a, name, group: g, opening: opening || 0};
-      if (GROUPS[g].kind === "liability" && limit) rec.limit = limit; else delete rec.limit;
-      const ar = root.querySelector("#a-arch"); if (ar) rec.archived = ar.checked;
-      if (!id) rec.order = Object.keys(S.data.accounts).length;
-      S.data.accounts[id || newId()] = rec; save(); closeSheet(); toast(id ? "Account saved" : "Account added");
-    };
-  });
-}
-function openPerson(id, kindDefault) {
-  const p = id ? S.data.people[id] : {name: "", kind: kindDefault || "rent", detail: "", monthly: 0, dueDay: 1, opening: 0};
-  openSheet(id ? "Edit person" : "Add person", `
-  <div class="field"><span class="lbl">Why they owe you</span>${tilesHTML("kind", Object.entries(KINDS).map(([k, x]) => [k, x.label, x.icon]), p.kind)}</div>
-  <div class="grid2">
-    <label class="field"><span class="lbl">Name</span><input class="input" id="p-name" maxlength="50" value="${esc(p.name)}"></label>
-    <label class="field"><span class="lbl" id="p-detail-l">Detail</span><input class="input" id="p-detail" maxlength="40" placeholder="Optional" value="${esc(p.detail || "")}"></label>
-  </div>
-  <div class="grid2" id="p-monthly-f">
-    <label class="field"><span class="lbl">Monthly amount</span><input class="input num" id="p-monthly" inputmode="decimal" placeholder="0.00" value="${amtVal(p.monthly)}"></label>
-    <label class="field"><span class="lbl">Due day</span><input class="input num" id="p-day" type="number" min="1" max="31" value="${p.dueDay || 1}"></label>
-  </div>
-  <label class="field"><span class="lbl">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
-  <p class="hint" style="margin:0" id="p-hint"></p>
-  ${id ? `<label class="chip" style="align-self:flex-start"><input type="checkbox" id="p-arch"${p.archived ? " checked" : ""}><span>Hide (moved out / settled)</span></label>` : ""}
-  <div class="err" id="p-err"></div>
-  <button type="button" class="btn primary block" id="p-save">${ico("check")}${id ? "Save" : "Add person"}</button>`, root => {
-    const sync = () => {
-      const k = val(root, "kind") || "rent";
-      root.querySelector("#p-monthly-f").hidden = !KINDS[k].monthly;
-      root.querySelector("#p-detail-l").textContent = k === "rent" ? "Unit" : k === "internet" ? "Plan / area" : "Detail";
-      root.querySelector("#p-hint").textContent = k === "loan" ? "Enter what they owe you today. Lend more later from their card; it'll come out of the account you pick." : "Amounts owed from before you started tracking count as over 60 days.";
-    };
-    root.querySelectorAll('input[name="kind"]').forEach(r => r.onchange = sync); sync();
-    root.querySelector("#p-save").onclick = () => {
-      const E = m => root.querySelector("#p-err").textContent = m;
-      const kind = val(root, "kind") || "rent";
-      const name = root.querySelector("#p-name").value.trim(); if (!name) return E("Enter their name.");
-      let monthly = 0, dueDay = 1;
-      if (KINDS[kind].monthly) {
-        const mRaw = root.querySelector("#p-monthly").value.trim(); monthly = mRaw ? parseAmt(mRaw) : 0;
-        if (mRaw && monthly == null && !isZeroish(mRaw)) return E("Monthly amount must be a number.");
-        dueDay = Math.min(31, Math.max(1, parseInt(root.querySelector("#p-day").value, 10) || 1));
-      }
-      const oRaw = root.querySelector("#p-open").value.trim(); const opening = oRaw ? parseAmt(oRaw) : 0;
-      if (oRaw && opening == null && !isZeroish(oRaw)) return E("Amount owed must be a number.");
-      const rec = {...p, name, kind, detail: root.querySelector("#p-detail").value.trim(), monthly: monthly || 0, dueDay, opening: opening || 0};
-      const ar = root.querySelector("#p-arch"); if (ar) rec.archived = ar.checked;
-      S.data.people[id || newId()] = rec; save(); closeSheet(); toast(id ? "Saved" : "Added");
-    };
-  });
-}
-
-/* ---------- nav + boot ---------- */
-function go(view) { S.view = view; pref.set("view", view); closeSheet(); window.scrollTo(0, 0); render(); }
-document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.v));
-$("#fab").onclick = () => openTxn();
-$("#mprev").onclick = () => { S.month = mShift(S.month, -1); render(); };
-$("#mnext").onclick = () => { S.month = mShift(S.month, 1); render(); };
-window.addEventListener("storage", e => { if (e.key === KEY) { S.data = load(); if (S.data) normalize(S.data); render(); } });
-render();
-if ("serviceWorker" in navigator) {
-  const hadController = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register("sw.js").then(r => r.update?.()).catch(() => {});
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (!hadController || $("#upd")) return;
-    const b = document.createElement("div"); b.id = "upd"; b.className = "toast"; b.style.cssText = "display:flex;gap:12px;align-items:center";
-    b.innerHTML = `<span>New version ready</span><button type="button" class="btn primary">Refresh</button>`;
-    b.querySelector("button").onclick = () => location.reload();
-    $("#toast-root").replaceChildren(b);
-  });
-}
-})();
-</script>
+<script src="app.js"></script>
 </body>
 </html>
