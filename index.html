@@ -72,7 +72,7 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 
 .hero{position:relative;overflow:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:18px}
 .hero::before{content:"";position:absolute;inset:0;pointer-events:none;
-  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:22px 22px;
+  background-image:repeating-linear-gradient(180deg,transparent 0 27px,var(--grid) 27px 28px);
   -webkit-mask-image:linear-gradient(160deg,#000 10%,transparent 75%);mask-image:linear-gradient(160deg,#000 10%,transparent 75%)}
 .hero::after{content:"";position:absolute;width:260px;height:260px;right:-90px;top:-120px;pointer-events:none;background:radial-gradient(closest-side,var(--halo),transparent)}
 .hero>*{position:relative}
