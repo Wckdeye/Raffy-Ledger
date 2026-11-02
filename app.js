@@ -69,7 +69,8 @@ const ico = (n, cls) => `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 24 
 const CAT_ICON = {"Groceries":"cart","Baby":"baby","Fuel & transport":"fuel","Utilities & load":"bolt","Food & dining":"food","Household":"home","Shopping":"bag","Health":"health","Personal":"user","Subscriptions":"repeat","Family & gifts":"gift","Interest & fees":"percent","Other":"dots",
   "Repairs & maintenance":"wrench","Property tax (amilyar)":"bill","Internet upstream":"router","Equipment & supplies":"box",
   "Gov't salary":"bank","Private work":"briefcase","Internet business":"wifi","Parents' allowance":"users","Other income":"pluscircle","Rental":"key"};
-const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk|school|tuition/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax|parts/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/repair|maint|fix/i,"wrench"],[/house|home/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge/i,"percent"],[/tax|amilyar|bir|permit/i,"bill"],[/equip|supply|supplies|tool/i,"box"],[/upstream|isp|bandwidth/i,"router"],[/salary|gov|payroll/i,"bank"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/rent/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
+const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk|school|tuition/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax|parts/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/repair|maint|fix/i,"wrench"],[/house|home/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge/i,"percent"],[/tax|amilyar|bir|permit/i,"bill"],[/equip|supply|supplies|tool/i,"box"],[/upstream|isp|bandwidth/i,"router"],[/salary|gov|payroll/i,"bank"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/\brent(al)?\b/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
+const isRentalCat = c => /\brent(al|s)?\b/i.test(c || "") && !/parent/i.test(c || "");
 const catIcon = c => (S && S.data && S.data.catIcons && S.data.catIcons[c]) || CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
 
 /* ================= helpers ================= */
@@ -146,6 +147,7 @@ function normalize(d) {
     BIZ_CATS.forEach(c => { if (!d.cats.expense.includes(c)) { if (at >= 0) d.cats.expense.splice(d.cats.expense.indexOf("Other"), 0, c); else d.cats.expense.push(c); } });
     d.ver = 2; changed = true;
   }
+  if (d.ver < 3) { Object.values(d.people).forEach(p => { if (KINDS[p.kind]?.monthly && !p.billFrom) p.billFrom = mKey(today()); }); d.ver = 3; changed = true; }
   return [d, changed];
 }
 { const raw = load(); if (raw) { const [d, ch] = normalize(raw); S.data = d; if (ch) persist(); } }
@@ -161,7 +163,7 @@ const pName = id => S.data.people[id]?.name || "Someone";
 const pKind = id => S.data.people[id]?.kind || "other";
 const allTxns = () => Object.entries(S.data.txns).map(([id, t]) => ({...t, id}));
 const txnBiz = t => t.type === "expense" ? (t.biz || null)
-  : t.type === "income" ? (t.biz || (S.data.incomeBiz || {})[t.cat] || (t.cat === "Internet business" ? "internet" : /rent/i.test(t.cat || "") ? "rental" : null))
+  : t.type === "income" ? (t.biz || (S.data.incomeBiz || {})[t.cat] || (t.cat === "Internet business" ? "internet" : isRentalCat(t.cat) ? "rental" : null))
   : t.type === "ar_charge" ? KINDS[pKind(t.person)].biz : null;
 
 function compute() {
@@ -284,7 +286,24 @@ function budgetUse(cat, mk) {
 function goalProgress(g, bal) { const have = g.acct ? Math.max(0, bal[g.acct] || 0) : (g.saved || 0); return {have, pct: Math.min(1, have / g.target)}; }
 
 function putTxn(t) { const {id, ...body} = t; S.data.txns[id] = body; save(); }
-function delTxn(id) { withUndo("Entry deleted", () => { delete S.data.txns[id]; }); }
+function delTxn(id) { withUndo("Entry deleted", () => { const t = S.data.txns[id]; if (t?.type === "ar_charge" && t.period && S.data.people[t.person]) { const p = S.data.people[t.person]; p.skip = [...new Set([...(p.skip || []), t.period])]; } delete S.data.txns[id]; }); }
+/* Post monthly rent / internet bills as receivables once their due date arrives. */
+const autoBills = p => KINDS[p.kind]?.monthly && p.monthly && p.auto !== false && !p.archived;
+function accrue() {
+  if (!S.data) return 0;
+  const t = today(), cur = mKey(t); let n = 0; const names = new Set();
+  const have = new Set(allTxns().filter(x => x.type === "ar_charge" && x.period).map(x => x.person + "|" + x.period));
+  people().filter(autoBills).forEach(p => {
+    let from = p.billFrom || cur; if (mDiff(from, cur) > 24) from = mShift(cur, -24);
+    for (let mk = from; mk <= cur; mk = mShift(mk, 1)) {
+      const date = `${mk}-${pad(Math.min(p.dueDay || 1, lastDay(mk)))}`;
+      if (date > t || have.has(p.id + "|" + mk) || (p.skip || []).includes(mk)) continue;
+      S.data.txns[newId()] = {type: "ar_charge", person: p.id, amt: p.monthly, date, period: mk, at: Date.now(), auto: true}; n++; names.add(p.name);
+    }
+  });
+  if (n) { persist(); toast(`Posted ${n} bill${n > 1 ? "s" : ""} to receivables: ${[...names].slice(0, 3).join(", ")}${names.size > 3 ? "…" : ""}`); }
+  return n;
+}
 /* Snapshot the whole book, apply the change, offer Undo for 6 seconds. */
 function withUndo(label, fn) {
   const snap = JSON.stringify(S.data); fn(); save();
@@ -561,7 +580,7 @@ function renderOwed(v) {
   const total = ps.reduce((s, p) => s + Math.max(0, rec[p.id]), 0);
   const mk = mKey(today());
   const billed = new Set(allTxns().filter(t => t.type === "ar_charge" && t.period === mk).map(t => t.person));
-  const pending = people().filter(p => KINDS[p.kind].monthly && p.monthly && !billed.has(p.id));
+  const pending = people().filter(p => KINDS[p.kind].monthly && p.monthly && p.auto === false && !billed.has(p.id));
   const sumB = tot[0] + tot[1] + tot[2];
   const F = [["all", "All", "users"], ["rent", "Rent", "key"], ["internet", "Internet", "wifi"], ["loan", "Loans", "coins"], ["other", "Other", "user"]];
   v.innerHTML = `
@@ -582,7 +601,7 @@ function renderOwed(v) {
   </section>`; }).join("")}
   ${ps.length ? "" : `<div class="empty"><h2>${S.pfilter === "all" ? "Who owes you?" : "No one here yet"}</h2><p>Add tenants, internet subscribers, or anyone you've lent money to. Each gets a running balance and aging.</p></div>`}
   <button type="button" class="btn block" id="addperson">${ico("pluscircle")}Add person</button>
-  <p class="hint" style="margin:0">Rent and internet bills count as income when billed. A loan doesn't: it moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
+  <p class="hint" style="margin:0">Rent and internet bills post to receivables automatically on each person's due day and count as income that month. A loan doesn't: it moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
   v.querySelectorAll("[data-pf]").forEach(b => b.onclick = () => { S.pfilter = b.dataset.pf; render(); });
   $("#addperson").onclick = () => openPerson(null, S.pfilter !== "all" ? S.pfilter : "rent");
   const ba = $("#billall"); if (ba) ba.onclick = () => billMonth(pending, mk);
@@ -815,7 +834,7 @@ function renderAccounts(v) {
     return `<section class="card"><div class="section-h"><h2>${title}</h2><span class="muted num" style="font-size:13px">${fmt(xs.filter(a => !a.archived).reduce((s, a) => s + bal[a.id], 0))}</span></div><div class="rows">
     ${xs.map(a => `<button type="button" class="row" data-acc="${a.id}"><span class="tile ${kindOf(a) === "liability" ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span><div class="main"><div class="t">${esc(a.name)}${a.archived ? ' <span class="pill">Hidden</span>' : ""}</div><div class="s">${esc(GROUPS[a.group].label)} · start ${fmt(a.opening || 0)}</div></div><div class="a">${fmt(bal[a.id])}</div></button>`).join("")}</div></section>`; };
   const cats = S.data.cats;
-  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="chips">${cats[k].map((c, i) => `<span class="tag-x"><button type="button" class="link" style="display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:500;padding:0" data-edcat="${k}:${i}" aria-label="Rename ${esc(c)}">${ico(catIcon(c))}${esc(c)}</button><button type="button" aria-label="Remove ${esc(c)}" data-rmcat="${k}:${i}">×</button></span>`).join("")}</div>
+  const catBlock = (k, label) => `<div class="field"><span class="lbl">${label}</span><div class="cat-list">${cats[k].map((c, i) => `<div class="cat-row"><button type="button" class="cat-main" data-edcat="${k}:${i}"><span class="tile sm t-${k}">${ico(catIcon(c))}</span><span class="cat-name">${esc(c)}</span>${ico("edit", "cat-ed")}</button><button type="button" class="iconbtn" data-rmcat="${k}:${i}" aria-label="Remove ${esc(c)}">${ico("x")}</button></div>`).join("")}</div>
     <form class="inline-add" data-addcat="${k}"><input class="input" id="newcat-${k}" placeholder="Add a category" maxlength="40"><button class="btn" type="submit">Add</button></form></div>`;
   v.innerHTML = `
   <div class="grid2"><button type="button" class="btn" id="startbal">${ico("sliders")}Starting balances</button><button type="button" class="btn" id="addacc">${ico("pluscircle")}Add account</button></div>
@@ -945,7 +964,7 @@ function renderSetup(v) {
       accs[id] = {name: $("#sn-" + id).value.trim() || name, group: g, opening: amt || 0, order: i};
     });
     if (bad) { $("#setup-err").textContent = "One of the balances isn't a number. Use digits like 12,500.00."; return; }
-    S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today(), ver: 2})[0];
+    S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today(), ver: 3})[0];
     save(); toast("Books created");
   };
 }
@@ -1091,7 +1110,7 @@ function openCategory(k, i) {
         Object.values(d.txns).forEach(t => { if (t.cat === old && t.type === k) t.cat = nn; });
         Object.values(d.recurring).forEach(r => { if (r.cat === old && r.type === k) r.cat = nn; });
         if (k === "expense" && d.budgets[old] != null) { d.budgets[nn] = d.budgets[old]; delete d.budgets[old]; }
-        if (k === "income") { const b = (d.incomeBiz || {})[old] || (old === "Internet business" ? "internet" : /rent/i.test(old) ? "rental" : null); if (b) { d.incomeBiz = d.incomeBiz || {}; d.incomeBiz[nn] = b; delete d.incomeBiz[old]; } }
+        if (k === "income") { const b = (d.incomeBiz || {})[old] || (old === "Internet business" ? "internet" : isRentalCat(old) ? "rental" : null); if (b) { d.incomeBiz = d.incomeBiz || {}; d.incomeBiz[nn] = b; delete d.incomeBiz[old]; } }
         if (d.catIcons?.[old]) { d.catIcons[nn] = d.catIcons[old]; delete d.catIcons[old]; }
       }
       if (icon) { d.catIcons = d.catIcons || {}; d.catIcons[nn] = icon; }
@@ -1215,6 +1234,10 @@ function openPerson(id, kindDefault) {
     <label class="field"><span class="lbl">Monthly amount</span><input class="input num" id="p-monthly" inputmode="decimal" placeholder="0.00" value="${amtVal(p.monthly)}"></label>
     <label class="field"><span class="lbl">Due day</span><input class="input num" id="p-day" type="number" min="1" max="31" value="${p.dueDay || 1}"></label>
   </div>
+  <div id="p-auto-f" class="stack" style="gap:12px">
+    <label class="check"><input type="checkbox" id="p-auto"${p.auto === false ? "" : " checked"}>Post the bill to receivables automatically on the due day</label>
+    <label class="field"><span class="lbl">Start billing from</span><input class="input" type="month" id="p-from" value="${p.billFrom || mKey(today())}"></label>
+  </div>
   <label class="field"><span class="lbl">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
   <p class="hint" style="margin:0" id="p-hint"></p>
   ${id ? `<label class="check"><input type="checkbox" id="p-arch"${p.archived ? " checked" : ""}>Hide (moved out / settled)</label>` : ""}
@@ -1222,7 +1245,7 @@ function openPerson(id, kindDefault) {
   <button type="button" class="btn primary block" id="p-save">${ico("check")}${id ? "Save" : "Add person"}</button>`, root => {
     const sync = () => {
       const k = val(root, "kind") || "rent";
-      root.querySelector("#p-monthly-f").hidden = !KINDS[k].monthly;
+      root.querySelector("#p-monthly-f").hidden = !KINDS[k].monthly; root.querySelector("#p-auto-f").hidden = !KINDS[k].monthly;
       root.querySelector("#p-detail-l").textContent = k === "rent" ? "Unit" : k === "internet" ? "Plan / area" : "Detail";
       root.querySelector("#p-hint").textContent = k === "loan" ? "Enter what they owe you today. Lend more later from their card; it'll come out of the account you pick." : "Amounts owed from before you started tracking count as over 60 days.";
     };
@@ -1235,8 +1258,9 @@ function openPerson(id, kindDefault) {
       if (KINDS[kind].monthly) { const m = readAmt(root, "#p-monthly", {label: "monthly amount"}); if (m.err) return E(m.err); monthly = m.v; dueDay = Math.min(31, Math.max(1, parseInt(root.querySelector("#p-day").value, 10) || 1)); }
       const o = readAmt(root, "#p-open", {label: "amount owed"}); if (o.err) return E(o.err);
       const rec = {...p, name, kind, detail: root.querySelector("#p-detail").value.trim(), monthly, dueDay, opening: o.v};
+      if (KINDS[kind].monthly) { rec.auto = root.querySelector("#p-auto").checked; rec.billFrom = root.querySelector("#p-from").value || mKey(today()); } else { delete rec.auto; delete rec.billFrom; }
       const ar = root.querySelector("#p-arch"); if (ar) rec.archived = ar.checked;
-      S.data.people[id || newId()] = rec; save(); closeSheet(); toast(id ? "Saved" : "Added");
+      S.data.people[id || newId()] = rec; closeSheet(); if (!accrue()) toast(id ? "Saved" : "Added"); save();
     };
   });
 }
@@ -1248,8 +1272,11 @@ $("#fab").onclick = () => openTxn();
 $("#mprev").onclick = () => { S.month = mShift(S.month, -1); render(); };
 $("#mnext").onclick = () => { S.month = mShift(S.month, 1); render(); };
 window.addEventListener("storage", e => { if (e.key === KEY) { const raw = load(); S.data = raw ? normalize(raw)[0] : null; render(); } });
+accrue();
 render();
 showLock();
+let lastDayChecked = today();
+document.addEventListener("visibilitychange", () => { if (!document.hidden && today() !== lastDayChecked) { lastDayChecked = today(); if (accrue()) render(); } });
 if ("serviceWorker" in navigator) {
   const hadController = !!navigator.serviceWorker.controller;
   navigator.serviceWorker.register("sw.js").then(r => r.update?.()).catch(() => {});
