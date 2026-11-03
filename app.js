@@ -63,13 +63,17 @@ const P = {
   gauge:'<path d="M4.5 17.5a8.5 8.5 0 1 1 15 0"/><path d="m12 13.5 3.5-4"/><circle cx="12" cy="14" r="1.3"/>',
   shield:'<path d="M12 3 4.5 6v5.5c0 4.6 3.2 8.2 7.5 9.5 4.3-1.3 7.5-4.9 7.5-9.5V6z"/><path d="m9 12 2.2 2.2L15.5 10"/>',
   calendar:'<rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  eye:'<path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18M10.6 6a9.6 9.6 0 0 1 1.4-.1C18 5.9 21.5 12 21.5 12a17 17 0 0 1-3 3.6M6.6 6.7A16.6 16.6 0 0 0 2.5 12S6 18.5 12 18.5a9.3 9.3 0 0 0 4.4-1.1M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  chat:'<path d="M4 5.5h16v10.5H9.5L5 20v-4H4z"/><path d="M8 10h8M8 13h5"/>',
+  copy:'<rect x="8.5" y="8.5" width="11.5" height="11.5" rx="2"/><path d="M15.5 8.5V5.5A1.5 1.5 0 0 0 14 4H5.5A1.5 1.5 0 0 0 4 5.5V14a1.5 1.5 0 0 0 1.5 1.5h3"/>',
   piggy:'<path d="M19 11.5c0-3.6-3.1-6-7-6-1.7 0-3.3.4-4.5 1.2L5 5.5v3.2A6 6 0 0 0 4 11H2.5v3H4a6.4 6.4 0 0 0 3 3.6V20h3v-1.7h4V20h3v-2.4c1.3-1 2-2.4 2-4.1z"/><path d="M15.5 10.5h.01"/>',
 };
 const ico = (n, cls) => `<svg class="ic${cls ? " " + cls : ""}" viewBox="0 0 24 24" aria-hidden="true">${P[n] || P.tag}</svg>`;
 const CAT_ICON = {"Groceries":"cart","Baby":"baby","Fuel & transport":"fuel","Utilities & load":"bolt","Food & dining":"food","Household":"home","Shopping":"bag","Health":"health","Personal":"user","Subscriptions":"repeat","Family & gifts":"gift","Interest & fees":"percent","Other":"dots",
   "Repairs & maintenance":"wrench","Property tax (amilyar)":"bill","Internet upstream":"router","Equipment & supplies":"box",
   "Gov't salary":"bank","Private work":"briefcase","Internet business":"wifi","Parents' allowance":"users","Other income":"pluscircle","Rental":"key"};
-const KW = [[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk|school|tuition/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax|parts/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/repair|maint|fix/i,"wrench"],[/house|home/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge/i,"percent"],[/tax|amilyar|bir|permit/i,"bill"],[/equip|supply|supplies|tool/i,"box"],[/upstream|isp|bandwidth/i,"router"],[/salary|gov|payroll/i,"bank"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/\brent(al)?\b/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
+const KW = [[/shopee|lazada|tiktok shop|zalora/i,"bag"],[/petron|shell|caltex|seaoil|phoenix|cleanfuel/i,"fuel"],[/jollibee|mcdo|mcdonald|chowking|mang inasal|kfc|starbucks|grabfood|foodpanda/i,"food"],[/meralco|maynilad|manila water|globe|smart|dito|pldt|converge|load/i,"bolt"],[/mercury|watsons|rose pharmacy|southstar|generika/i,"health"],[/sm |puregold|robinsons|savemore|waltermart|7-eleven|ministop/i,"cart"],[/netflix|spotify|youtube|icloud|google one|disney/i,"repeat"],[/grocer|market|palengke/i,"cart"],[/baby|kid|child|diaper|milk|school|tuition/i,"baby"],[/fuel|gas|transpo|grab|fare|car|moto|nmax|parts/i,"fuel"],[/electric|water|util|load|meralco/i,"bolt"],[/food|dine|eat|resto|coffee|snack/i,"food"],[/repair|maint|fix/i,"wrench"],[/house|home/i,"home"],[/shop|shopee|lazada/i,"bag"],[/health|med|doctor|pharm|hospital/i,"health"],[/sub|netflix|spotify|app/i,"repeat"],[/gift|family|church|zakat|donat/i,"gift"],[/interest|fee|charge/i,"percent"],[/tax|amilyar|bir|permit/i,"bill"],[/equip|supply|supplies|tool/i,"box"],[/upstream|isp|bandwidth/i,"router"],[/salary|gov|payroll/i,"bank"],[/work|freelance|job|consult/i,"briefcase"],[/internet|wifi/i,"wifi"],[/allowance|parent/i,"users"],[/\brent(al)?\b/i,"key"],[/pickle|sport|gym/i,"pulse"],[/save|saving|invest/i,"trend"]];
 const isRentalCat = c => /\brent(al|s)?\b/i.test(c || "") && !/parent/i.test(c || "");
 const catIcon = c => (S && S.data && S.data.catIcons && S.data.catIcons[c]) || CAT_ICON[c] || (KW.find(([r]) => r.test(c || "")) || [0, "tag"])[1];
 
@@ -83,6 +87,13 @@ const sfmt = c => (c < 0 ? "−" : "") + fmt(c);
 const pesoShort = c => { const n = Math.abs(c) / 100; const s = n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n.toLocaleString("en-PH", {maximumFractionDigits: 0}); return (c < 0 ? "−" : "") + "₱" + s; };
 const kShort = c => { const n = Math.abs(c) / 100; return (c < 0 ? "−" : "") + (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? Math.round(n / 1e3) + "k" : Math.round(n)); };
 const parseAmt = s => { const n = Number(String(s ?? "").replace(/[₱,\s]/g, "")); return isFinite(n) && n > 0 ? Math.round(n * 100) : null; };
+/* Amount boxes accept sums like 120+85+40 or 3*150. */
+const evalAmt = s => {
+  const x = String(s ?? "").replace(/[₱,\s]/g, "").replace(/[×x]/gi, "*").replace(/÷/g, "/").replace(/−/g, "-");
+  if (!x || !/^[\d.+\-*/()]+$/.test(x) || /[+\-*/.]{2,}/.test(x.replace(/\*-|\/-|\(-/g, ""))) return null;
+  try { const n = Function(`"use strict";return (${x})`)(); return isFinite(n) && n > 0 ? Math.round(n * 100) : null; } catch { return null; }
+};
+const isExpr = s => /[+\-*/×÷−]/.test(String(s ?? "").replace(/^\s*[-−]/, ""));
 const isZeroish = s => Number(String(s).replace(/[₱,\s]/g, "")) === 0;
 const toISO = d => d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 const today = () => toISO(new Date());
@@ -140,6 +151,7 @@ function save() { persist(); render(); }
 function normalize(d) {
   d.accounts = d.accounts || {}; d.people = d.people || {}; d.txns = d.txns || {};
   d.cats = d.cats || clone(DEFAULT_CATS); d.cats.income = d.cats.income || []; d.cats.expense = d.cats.expense || [];
+  d.favs = d.favs || {};
   d.recurring = d.recurring || {}; d.plans = d.plans || {}; d.budgets = d.budgets || {}; d.goals = d.goals || {}; d.skips = d.skips || {};
   let changed = false;
   if ((d.ver || 1) < 2) {
@@ -177,6 +189,7 @@ function compute() {
     else if (t.type === "transfer") { ap(t.acct, -t.amt); ap(t.to, t.amt); }
     else if (t.type === "ar_charge") { if (t.person in rec) rec[t.person] += t.amt; if (t.acct) ap(t.acct, -t.amt); }
     else if (t.type === "ar_collect") { ap(t.acct, t.amt); if (t.person in rec) rec[t.person] -= t.amt; }
+    else if (t.type === "adjust") { if (t.acct in bal) bal[t.acct] += t.delta; }
   }
   return {bal, rec};
 }
@@ -375,13 +388,14 @@ function txnRow(t) {
   else if (t.type === "ar_charge") { const k = pKind(t.person), loan = k === "loan"; title = (loan ? "Lent to " : "Billed ") + pName(t.person); sub = loan ? "From " + accName(t.acct) : KINDS[k].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; icon = loan ? "coins" : "bill"; }
   else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = KINDS[pKind(t.person)].icon; }
   const b = t.type === "expense" && t.biz ? BIZ[t.biz]?.label : null; if (b) sub = b + " · " + sub;
+  if (t.type === "adjust") { title = "Balance adjustment"; sub = accName(t.acct) + " · matched to actual"; amt = (t.delta < 0 ? "−" : "+") + fmt(t.delta); icon = "sliders"; cls = "muted"; }
   if (t.note) sub += " · " + t.note;
   return `<button type="button" class="row" data-tx="${esc(t.id)}"><span class="tile t-${t.type}">${ico(icon)}</span><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}</div></button>`;
 }
 function wireRows(root) {
   root.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => {
     const t = S.data.txns[b.dataset.tx]; if (!t) return; const tx = {...t, id: b.dataset.tx};
-    tx.type === "ar_charge" ? openCharge(tx.person, tx) : openTxn({edit: tx});
+    tx.type === "ar_charge" ? openCharge(tx.person, tx) : tx.type === "adjust" ? openAdjustEntry(tx) : openTxn({edit: tx});
   });
 }
 const barsHTML = (obj, inc) => {
@@ -434,7 +448,7 @@ function renderHome(v) {
   ${installEvt && !standalone() ? `<div class="banner"><span>Install the app so it opens offline from your home screen.</span><button type="button" class="btn primary" id="install">${ico("install")}Install</button></div>` : ""}
   ${needBackup ? `<div class="banner warn"><span>${lb ? `Last backup ${-daysUntil(lb)} days ago.` : "You haven't backed up yet."} Your data lives only on this phone.</span><button type="button" class="btn" data-go="security">${ico("down")}Back up</button></div>` : ""}
   <section class="hero" aria-label="Net worth">
-    <div class="eyebrow">Net worth · as of today</div>
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="eyebrow">Net worth · as of today</div><button type="button" class="iconbtn" id="eye" aria-pressed="${privacy}" aria-label="${privacy ? "Show amounts" : "Hide amounts"}">${ico(privacy ? "eyeoff" : "eye")}</button></div>
     <div class="big">${net < 0 ? "−" : ""}${esc(whole)}<small>.${cents}</small></div>
     <div class="hero-grid">
       <div><div class="k">${ico("wallet")}Cash &amp; bank</div><div class="v">${pesoShort(cash)}</div></div>
@@ -448,6 +462,7 @@ function renderHome(v) {
     <button type="button" data-q="pay"><span class="tile t-transfer">${ico("card")}</span>Pay bill</button>
     <button type="button" data-q="collect"><span class="tile t-ar_collect">${ico("coins")}</span>Got paid</button>
   </div>
+  ${favStrip()}
   ${due.length ? `<section class="card"><div class="section-h"><h2>To confirm · ${due.length}</h2><button type="button" class="link" data-go="recurring">Recurring</button></div>${dueHTML(due, 5)}${due.length > 5 ? `<p class="hint" style="margin:8px 0 0">${due.length - 5} more in Recurring.</p>` : ""}</section>` : ""}
   <section class="card">
     <div class="section-h"><h2>${esc(mLabel(S.month, true))}</h2>${S.month !== mKey(today()) ? `<button type="button" class="btnchip" id="to-now">${ico("calendar")}Back to ${esc(mName(mKey(today())))}</button>` : `<button type="button" class="link" data-go="reports">Reports</button>`}</div>
@@ -484,11 +499,14 @@ function renderHome(v) {
     if (q === "pay") { const first = dues[0]; openTxn({type: "transfer", to: first?.a.id || accounts().find(a => kindOf(a) === "liability")?.id, amt: first ? (first.loan ? first.a.monthly : first.st.left) : null}); }
     else openTxn({type: q});
   });
+  $("#eye").onclick = () => { privacy = !privacy; pref.set("privacy", privacy); applyPrivacy(); render(); };
+  v.querySelectorAll("[data-fav]").forEach(b => b.onclick = () => useFav(b.dataset.fav));
+  const fe = $("#fav-edit"); if (fe) fe.onclick = openFavorites;
   const ib = $("#install"); if (ib) ib.onclick = async () => { installEvt.prompt(); await installEvt.userChoice.catch(() => {}); installEvt = null; render(); };
 }
 
 /* ---------- Activity (with search) ---------- */
-function txnText(t) { return [t.cat, t.note, t.acct && accName(t.acct), t.to && accName(t.to), t.person && pName(t.person), t.biz && BIZ[t.biz]?.label, (t.amt / 100).toFixed(2), String(Math.round(t.amt / 100))].filter(Boolean).join(" ").toLowerCase(); }
+function txnText(t) { return [t.type === "adjust" ? "adjustment" : "", t.cat, t.note, t.acct && accName(t.acct), t.to && accName(t.to), t.person && pName(t.person), t.biz && BIZ[t.biz]?.label, (t.amt / 100).toFixed(2), String(Math.round(t.amt / 100))].filter(Boolean).join(" ").toLowerCase(); }
 function renderActivity(v) {
   const F = [["all", "All", "list"], ["expense", "Expenses", "out"], ["income", "Income", "in"], ["transfer", "Transfers", "swap"], ["ar", "Owed to me", "coins"]];
   v.innerHTML = `
@@ -597,7 +615,7 @@ function renderOwed(v) {
       <div class="cc-owed"><div class="v ${r > 0 ? "out" : ""}">${fmt(r)}</div><div class="muted" style="font-size:12px">${r < 0 ? "paid ahead" : r === 0 ? "settled" : "owes you"}</div></div></div>
     ${r > 0 ? `<div class="chips">${a.b[0] ? `<span class="pill ok">0–30d ${pesoShort(a.b[0])}</span>` : ""}${a.b[1] ? `<span class="pill warn">31–60d ${pesoShort(a.b[1])}</span>` : ""}${a.b[2] ? `<span class="pill bad">60d+ ${pesoShort(a.b[2])}</span>` : ""}</div>` : ""}
     <div class="hint">${a.last ? `Last paid ${fmt(a.last.amt)} on ${esc(dShort(a.last.date))}` : "No payments recorded yet"}</div>
-    <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">${ico("coins")}Got paid</button><button type="button" class="btn" data-charge="${p.id}">${ico(p.kind === "loan" ? "out" : "bill")}${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}" aria-label="Edit ${esc(p.name)}">${ico("edit")}</button></div>
+    <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">${ico("coins")}Got paid</button>${r > 0 ? `<button type="button" class="btn" data-remind="${p.id}" aria-label="Remind ${esc(p.name)}">${ico("chat")}</button>` : ""}<button type="button" class="btn" data-charge="${p.id}">${ico(p.kind === "loan" ? "out" : "bill")}${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}" aria-label="Edit ${esc(p.name)}">${ico("edit")}</button></div>
   </section>`; }).join("")}
   ${ps.length ? "" : `<div class="empty"><h2>${S.pfilter === "all" ? "Who owes you?" : "No one here yet"}</h2><p>Add tenants, internet subscribers, or anyone you've lent money to. Each gets a running balance and aging.</p></div>`}
   <button type="button" class="btn block" id="addperson">${ico("pluscircle")}Add person</button>
@@ -606,6 +624,7 @@ function renderOwed(v) {
   $("#addperson").onclick = () => openPerson(null, S.pfilter !== "all" ? S.pfilter : "rent");
   const ba = $("#billall"); if (ba) ba.onclick = () => billMonth(pending, mk);
   v.querySelectorAll("[data-collect]").forEach(b => b.onclick = () => openTxn({type: "collect", person: b.dataset.collect}));
+  v.querySelectorAll("[data-remind]").forEach(b => b.onclick = () => openRemind(b.dataset.remind, rec[b.dataset.remind], ag[b.dataset.remind]));
   v.querySelectorAll("[data-charge]").forEach(b => b.onclick = () => openCharge(b.dataset.charge));
   v.querySelectorAll("[data-person]").forEach(b => b.onclick = () => openPerson(b.dataset.person));
 }
@@ -969,6 +988,100 @@ function renderSetup(v) {
   };
 }
 
+/* ================= quality of life ================= */
+let privacy = pref.get("privacy", false);
+const applyPrivacy = () => document.body.classList.toggle("privacy", privacy);
+applyPrivacy();
+const amtBox = (id, v) => `<div class="amt-wrap"><span>₱</span><input class="amt-input" id="${id}" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${amtVal(v)}" aria-label="Amount"></div>
+  <div class="calc"><span class="hint" id="${id}-res"></span><div class="calc-keys">${["+", "−", "×"].map(k => `<button type="button" data-op="${k}" data-for="${id}">${k}</button>`).join("")}</div></div>`;
+function wireAmt(root, id) {
+  const i = root.querySelector("#" + id), res = root.querySelector(`#${id}-res`);
+  const show = () => { const raw = i.value; if (!isExpr(raw)) { res.textContent = ""; return; } const v = evalAmt(raw); res.textContent = v ? "= " + fmt(v) : "…"; };
+  root.querySelectorAll(`[data-for="${id}"]`).forEach(b => b.onclick = () => { const op = {"+": "+", "−": "-", "×": "*"}[b.dataset.op]; i.value = i.value.replace(/[+\-*/]$/, "") + op; i.focus(); show(); });
+  i.addEventListener("input", show);
+  i.addEventListener("blur", () => { if (isExpr(i.value)) { const v = evalAmt(i.value); if (v) { i.value = (v / 100).toFixed(2); show(); } } });
+  show();
+}
+function favStrip() {
+  const fs = entries(S.data.favs);
+  if (!fs.length) return "";
+  return `<section class="favs"><div class="section-h" style="margin:0 0 8px"><span class="lbl">Favorites</span><button type="button" class="link" id="fav-edit">Edit</button></div>
+    <div class="filters">${fs.map(f => `<button type="button" class="btnchip fav" data-fav="${f.id}"><span class="tile sm t-${f.type}">${ico(f.type === "transfer" ? "swap" : catIcon(f.cat))}</span><span>${esc(f.name)}<small class="num">${f.amt ? fmt(f.amt) : "Enter amount"}</small></span></button>`).join("")}</div></section>`;
+}
+function useFav(id) {
+  const f = S.data.favs[id]; if (!f) return;
+  if (!S.data.accounts[f.acct] || (f.type === "transfer" && !S.data.accounts[f.to])) return toast("This favorite uses a deleted account. Edit it from Favorites → Edit.", true);
+  if (!f.amt) return openTxn({type: f.type, prefill: {cat: f.cat, acct: f.acct, to: f.to, biz: f.biz, note: f.name}});
+  const t = {id: newId(), type: f.type, amt: f.amt, date: today(), at: Date.now(), acct: f.acct, note: f.name};
+  if (f.type === "transfer") t.to = f.to; else t.cat = f.cat; if (f.biz) t.biz = f.biz;
+  const before = t.type === "expense" ? (budgetUse(t.cat, mKey(t.date))?.spent || 0) : 0;
+  withUndo(`Logged ${f.name} · ${fmt(f.amt)}`, () => { const {id: tid, ...body} = t; S.data.txns[tid] = body; });
+  setTimeout(() => budgetNudge(t, before), 6200);
+}
+function openFavorites() {
+  const fs = entries(S.data.favs);
+  openSheet("Favorites", `<p class="hint" style="margin:0">Tap a favorite on Home to log it instantly with today's date. Leave the amount blank for ones that change, like gas.</p>
+  <div class="sb-list">${fs.map(f => `<div class="fav-row"><span class="tile sm t-${f.type}">${ico(f.type === "transfer" ? "swap" : catIcon(f.cat))}</span><input class="input" data-fname="${f.id}" maxlength="30" value="${esc(f.name)}" aria-label="Name"><input class="input num" data-famt="${f.id}" inputmode="decimal" placeholder="Ask" value="${amtVal(f.amt)}" aria-label="${esc(f.name)} amount"><button type="button" class="iconbtn" data-fdel="${f.id}" aria-label="Remove ${esc(f.name)}">${ico("x")}</button></div>`).join("")}</div>
+  <p class="hint" style="margin:0">To add one, log an entry and tick "Also save as a favorite".</p>
+  <div class="err" id="fv-err"></div><button type="button" class="btn primary block" id="fv-save">${ico("check")}Save favorites</button>`, root => {
+    const gone = new Set();
+    root.querySelectorAll("[data-fdel]").forEach(b => b.onclick = () => { gone.add(b.dataset.fdel); b.closest(".fav-row").remove(); });
+    root.querySelector("#fv-save").onclick = () => {
+      let bad = null;
+      root.querySelectorAll("[data-famt]").forEach(i => { const r = i.value.trim(); if (r && evalAmt(r) == null && !isZeroish(r)) bad = bad || i; });
+      if (bad) { root.querySelector("#fv-err").textContent = "One of the amounts isn't a number."; bad.focus(); return; }
+      gone.forEach(id => delete S.data.favs[id]);
+      root.querySelectorAll("[data-fname]").forEach(i => { const f = S.data.favs[i.dataset.fname]; if (f) f.name = i.value.trim() || f.name; });
+      root.querySelectorAll("[data-famt]").forEach(i => { const f = S.data.favs[i.dataset.famt]; if (f) { const r = i.value.trim(); f.amt = r ? evalAmt(r) || 0 : 0; } });
+      save(); closeSheet(); toast("Favorites saved");
+    };
+  });
+}
+function openRemind(pid, bal, ag) {
+  const p = S.data.people[pid], k = p.kind;
+  const what = k === "rent" ? "rent" : k === "internet" ? "internet bill" : k === "loan" ? "loan" : "balance";
+  const oldest = ag?.b?.[2] ? " Part of this has been unpaid for over 2 months." : ag?.b?.[1] ? " Part of this is over a month old." : "";
+  const first = p.name.split(" ")[0];
+  const variants = {
+    gentle: `Hi ${first}! Friendly reminder that your ${what} balance is ${fmt(bal)} as of ${dShort(today())}.${oldest} You can send it via GCash or bank transfer anytime. Thank you!`,
+    firm: `Hi ${first}, this is a reminder that your ${what} balance of ${fmt(bal)} is now due.${oldest} Please settle it by ${dShort(addDays(today(), 7))}, or let me know when you can pay. Thank you.`,
+  };
+  let tone = "gentle";
+  openSheet("Remind " + p.name, `<div class="seg2" role="group"><button type="button" data-tone="gentle" aria-pressed="true">Friendly</button><button type="button" data-tone="firm" aria-pressed="false">Firm</button></div>
+  <textarea class="input" id="rm-text" rows="5" style="resize:vertical;line-height:1.45">${esc(variants.gentle)}</textarea>
+  <p class="hint" style="margin:0">Edit it if you like, then share to Messenger or SMS, or copy it.</p>
+  <div class="grid2"><button type="button" class="btn primary" id="rm-share">${ico("chat")}Share</button><button type="button" class="btn" id="rm-copy">${ico("copy")}Copy</button></div>`, root => {
+    const ta = root.querySelector("#rm-text");
+    root.querySelectorAll("[data-tone]").forEach(b => b.onclick = () => { tone = b.dataset.tone; root.querySelectorAll("[data-tone]").forEach(x => x.setAttribute("aria-pressed", x === b)); ta.value = variants[tone]; });
+    const copy = async () => { try { await navigator.clipboard.writeText(ta.value); toast("Copied. Paste it in Messenger or SMS"); } catch { ta.select(); toast("Text selected. Tap Copy in your keyboard menu"); } };
+    root.querySelector("#rm-copy").onclick = copy;
+    const sh = root.querySelector("#rm-share");
+    if (!navigator.share) sh.hidden = true; else sh.onclick = async () => { try { await navigator.share({text: ta.value}); } catch (e) { if (e?.name !== "AbortError") copy(); } };
+  });
+}
+function openReconcile(id) {
+  const a = S.data.accounts[id]; const cur = compute().bal[id]; const lib = kindOf(a) === "liability";
+  openSheet("Match " + a.name, `<div class="kv" style="grid-template-columns:1fr 1fr"><div><div class="k">${lib ? "App says you owe" : "App balance"}</div><div class="v">${fmt(cur)}</div></div><div><div class="k">Difference</div><div class="v" id="rc-diff">—</div></div></div>
+  <label class="field"><span class="lbl">${lib ? "Actual amount owed" : "Actual balance right now"}</span><input class="input num" id="rc-amt" inputmode="decimal" placeholder="${(cur / 100).toFixed(2)}"></label>
+  <p class="hint" style="margin:0">Check your ${a.group === "cash" ? "wallet" : "bank or e-wallet app"} and enter the real figure. The difference is logged as a balance adjustment. It doesn't count as income or expense, so your reports stay clean.</p>
+  <div class="err" id="rc-err"></div><button type="button" class="btn primary block" id="rc-save">${ico("check")}Match balance</button>`, root => {
+    const inp = root.querySelector("#rc-amt"), diff = root.querySelector("#rc-diff");
+    const read = () => { const r = inp.value.trim(); if (!r) return null; if (isZeroish(r)) return 0; return evalAmt(r); };
+    inp.oninput = () => { const v = read(); diff.textContent = v == null ? "—" : (v - cur > 0 ? "+" : v - cur < 0 ? "−" : "") + fmt(v - cur); diff.className = "v " + (v == null || v === cur ? "" : (v - cur > 0) !== lib ? "in" : "out"); };
+    root.querySelector("#rc-save").onclick = () => {
+      const v = read(); if (v == null) return root.querySelector("#rc-err").textContent = "Enter the actual balance.";
+      const delta = v - cur; if (!delta) { closeSheet(); return toast("Already matches"); }
+      withUndo(`${a.name} matched to ${fmt(v)}`, () => { S.data.txns[newId()] = {type: "adjust", acct: id, delta, amt: Math.abs(delta), date: today(), at: Date.now()}; });
+      closeSheet();
+    };
+  });
+}
+function openAdjustEntry(t) {
+  openSheet("Balance adjustment", `<div class="kv" style="grid-template-columns:1fr 1fr"><div><div class="k">Account</div><div class="v">${esc(accName(t.acct))}</div></div><div><div class="k">Change</div><div class="v">${t.delta < 0 ? "−" : "+"}${fmt(t.delta)}</div></div></div>
+  <p class="hint" style="margin:0">Made on ${esc(dLabel(t.date))} to match the actual balance. Delete it to undo the match.</p>
+  <button type="button" class="btn danger block" id="ad-del">Delete adjustment</button>`, root => { armDelete(root.querySelector("#ad-del"), () => { closeSheet(); delTxn(t.id); }); });
+}
+
 /* ================= sheets ================= */
 function openTxn(o = {}) {
   const e = o.edit, pf = o.prefill || {};
@@ -976,12 +1089,15 @@ function openTxn(o = {}) {
   const last = pref.get("lastAcct", {});
   const html = `
   <div class="seg" role="group" aria-label="Type">${TYPES.map(([k, l, ic]) => `<button type="button" data-type="${k}" aria-pressed="${k === type}">${ico(ic)}${l}</button>`).join("")}</div>
-  <div class="amt-wrap"><span>₱</span><input class="amt-input" id="f-amt" inputmode="decimal" autocomplete="off" placeholder="0.00" value="${amtVal(e?.amt || o.amt || pf.amt)}" aria-label="Amount"></div>
+  ${amtBox("f-amt", e?.amt || o.amt || pf.amt)}
   <div id="f-dyn" class="stack" style="gap:16px"></div>
   <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="f-date" value="${e?.date || pf.date || today()}"></label>
-    <label class="field"><span class="lbl">Note</span><input class="input" id="f-note" maxlength="80" placeholder="Optional" value="${esc(e?.note || pf.note || "")}"></label></div>
+    <label class="field"><span class="lbl">Note</span><input class="input" id="f-note" maxlength="80" placeholder="e.g. Shopee, Petron" value="${esc(e?.note || pf.note || "")}" autocomplete="off"></label></div>
+  <p class="hint" id="f-smart" style="margin:-6px 0 0" hidden></p>
+  ${e ? "" : `<label class="check"><input type="checkbox" id="f-fav">Also save as a favorite for one-tap logging</label>`}
   <div class="err" id="f-err" role="alert"></div>
   <button type="button" class="btn primary block" id="f-save">${ico("check")}${e ? "Save changes" : "Save"}</button>
+  ${e ? `<button type="button" class="btn block" id="f-again">${ico("repeat")}Log again today</button>` : ""}
   ${e ? `<button type="button" class="btn danger block" id="f-del">Delete</button>` : ""}`;
   openSheet(e ? "Edit entry" : o.rid ? "Confirm entry" : "New entry", html, root => {
     const sel = {cat: e?.cat || pf.cat, acct: e?.acct || pf.acct, to: e?.to || o.to || pf.to, person: e?.person || o.person, biz: e?.biz ?? pf.biz ?? ""};
@@ -1007,10 +1123,27 @@ function openTxn(o = {}) {
     }
     draw();
     root.querySelectorAll("[data-type]").forEach(b => b.onclick = () => { capture(); type = b.dataset.type; root.querySelectorAll("[data-type]").forEach(x => x.setAttribute("aria-pressed", x === b)); root.querySelector("#f-err").textContent = ""; draw(); });
-    const amtI = root.querySelector("#f-amt"); if (!e && !o.amt && !pf.amt) setTimeout(() => amtI.focus(), 60);
+    const amtI = root.querySelector("#f-amt"); wireAmt(root, "f-amt"); if (!e && !o.amt && !pf.amt) setTimeout(() => amtI.focus(), 60);
+    /* Smart fill: pick category and account from past entries with a similar note, or from known brand names. */
+    let touched = !!(e || pf.cat); dyn.addEventListener("change", ev => { if (ev.target.name === "cat" || ev.target.name === "acct") touched = true; });
+    const noteI = root.querySelector("#f-note"), smart = root.querySelector("#f-smart");
+    noteI.addEventListener("input", () => {
+      if (touched || (type !== "expense" && type !== "income")) return;
+      const q = noteI.value.trim().toLowerCase(); smart.hidden = true; if (q.length < 3) return;
+      const hit = allTxns().filter(t => t.type === type && t.note && t.note.toLowerCase().includes(q)).sort((a, b) => (b.at || 0) - (a.at || 0))[0];
+      let cat = hit?.cat, acct = hit?.acct, why = hit ? "your last similar entry" : "";
+      if (!cat && type === "expense") { const icon = (KW.find(([r]) => r.test(q)) || [])[1]; if (icon) { cat = S.data.cats.expense.find(c => catIcon(c) === icon); why = "the name"; } }
+      if (!cat) return;
+      const pick = (name, v) => { const r = v && dyn.querySelector(`input[name="${name}"][value="${CSS.escape(v)}"]`); if (r) r.checked = true; return !!r; };
+      const okC = pick("cat", cat), okA = pick("acct", acct);
+      if (hit?.biz) pick("biz", hit.biz);
+      if (okC) { smart.hidden = false; smart.textContent = `Picked ${cat}${okA ? " · " + accName(acct) : ""} from ${why}.`; }
+    });
+    const again = root.querySelector("#f-again");
+    if (again) again.onclick = () => { const c = {...e, id: newId(), date: today(), at: Date.now()}; ["rid", "rdate", "pairTo", "plan", "auto", "period"].forEach(k => delete c[k]); putTxn(c); closeSheet(); toast(`Logged again: ${fmt(c.amt)}`); };
     root.querySelector("#f-save").onclick = () => {
       const err = m => root.querySelector("#f-err").textContent = m;
-      const amt = parseAmt(amtI.value); if (!amt) return err("Enter an amount greater than zero.");
+      const amt = evalAmt(amtI.value); if (!amt) return err(isExpr(amtI.value) ? "That sum doesn't work out. Check the numbers." : "Enter an amount greater than zero.");
       const date = root.querySelector("#f-date").value; if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return err("Pick a date.");
       const note = root.querySelector("#f-note").value.trim(); const g = k => val(dyn, k);
       const t = {id: e?.id || newId(), amt, date, at: e?.at || Date.now()}; if (note) t.note = note;
@@ -1028,6 +1161,7 @@ function openTxn(o = {}) {
       if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
       const before = t.type === "expense" ? (budgetUse(t.cat, mKey(t.date))?.spent || 0) - (e && e.type === "expense" && e.cat === t.cat && mKey(e.date) === mKey(t.date) ? e.amt : 0) : 0;
       if (extra) { const {id, ...body} = extra; S.data.txns[id] = body; }
+      if (root.querySelector("#f-fav")?.checked && t.type !== "ar_collect") { const fid = newId(); S.data.favs[fid] = {name: t.note || t.cat || (t.type === "transfer" ? "Transfer to " + accName(t.to) : "Favorite"), type: t.type, amt: t.amt, cat: t.cat, acct: t.acct, to: t.to, biz: t.biz}; }
       putTxn(t); closeSheet(); toast(e ? "Saved" : o.rid ? "Logged" : "Added"); budgetNudge(t, before);
     };
     const del = root.querySelector("#f-del");
@@ -1144,7 +1278,7 @@ function balanceAsOf(id, date) {
   for (const t of allTxns()) { if (t.date > date) continue;
     if (t.type === "expense" && t.acct === id) b -= sg * t.amt; else if (t.type === "income" && t.acct === id) b += sg * t.amt;
     else if (t.type === "transfer") { if (t.acct === id) b -= sg * t.amt; if (t.to === id) b += sg * t.amt; }
-    else if ((t.type === "ar_collect") && t.acct === id) b += sg * t.amt; else if (t.type === "ar_charge" && t.acct === id) b -= sg * t.amt; }
+    else if ((t.type === "ar_collect") && t.acct === id) b += sg * t.amt; else if (t.type === "adjust" && t.acct === id) b += t.delta; else if (t.type === "ar_charge" && t.acct === id) b -= sg * t.amt; }
   return b;
 }
 function suggestStatement(a) {
@@ -1198,7 +1332,9 @@ function openAccount(id, groupDefault) {
   ${id ? `<label class="check"><input type="checkbox" id="a-arch"${a.archived ? " checked" : ""}>Hide this account</label>` : ""}
   <p class="hint" style="margin:0" id="a-hint"></p>
   <div class="err" id="a-err"></div>
-  <button type="button" class="btn primary block" id="a-save">${ico("check")}${id ? "Save" : "Add"}</button>`, root => {
+  <button type="button" class="btn primary block" id="a-save">${ico("check")}${id ? "Save" : "Add"}</button>
+  ${id ? `<button type="button" class="btn block" id="a-rec">${ico("sliders")}Match to actual balance</button>` : ""}`, root => {
+    const rb = root.querySelector("#a-rec"); if (rb) rb.onclick = () => openReconcile(id);
     const grp = () => val(root, "grp") || "bank";
     const sync = () => { const g = grp(), lib = GROUPS[g].kind === "liability";
       root.querySelector("#a-limit-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-card-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-loan-f").hidden = g !== "loan";

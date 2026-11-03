@@ -286,6 +286,19 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 .cat-name{flex:1;min-width:0;font-weight:500;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cat-ed{width:16px!important;height:16px!important;color:var(--muted)}
 .t-income.tile{--c:var(--in)}
+.calc{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:-8px}
+.calc .hint{font-family:var(--f-num)}
+.calc-keys{display:flex;gap:6px}
+.calc-keys button{width:40px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--surface);font-family:var(--f-num);font-size:17px;color:var(--ink)}
+.favs .filters{gap:8px}
+.btnchip.fav{padding:6px 12px 6px 6px;color:var(--ink);gap:8px;border-radius:14px}
+.btnchip.fav>span:last-child{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2;font-size:13px}
+.btnchip.fav small{font-size:11px;color:var(--muted);font-weight:500}
+.btnchip.fav .tile.sm .ic{width:15px;height:15px}
+.fav-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,6.5rem) auto;gap:8px;align-items:center}
+textarea.input{font:inherit;color:inherit}
+.hero .iconbtn{width:32px;height:32px;background:transparent;color:var(--muted)}
+body.privacy :is(.hero .big,.hero-grid .v,.pl .v,.row .a,.bar-row .amt,.cc-owed .v,.stmt .v,.kv .v,.brow .rt,.section-h .num,.stmt-tbl .ln span:last-child,.btnchip.fav small,.legend span,.chart text){filter:blur(7px);user-select:none}
 </style>
 </head>
 <body>
