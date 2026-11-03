@@ -1401,6 +1401,29 @@ function openPerson(id, kindDefault) {
   });
 }
 
+/* ================= keyboard ================= */
+/* Keep sheets above the on-screen keyboard and the focused field in view. */
+(() => {
+  const vv = window.visualViewport; const root = document.documentElement; let fullH = vv ? vv.height : window.innerHeight;
+  const sync = () => {
+    const h = vv ? vv.height : window.innerHeight;
+    const kb = vv ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop) : 0;
+    root.style.setProperty("--vvh", h + "px"); root.style.setProperty("--kb", kb + "px");
+    const typing = document.activeElement?.matches?.("input:not([type=checkbox]):not([type=radio]),textarea,select");
+    if (!typing || h > fullH) fullH = Math.max(h, typing ? fullH : h);
+    document.body.classList.toggle("kb", !!typing && (kb > 80 || h < fullH * 0.75));
+  };
+  if (vv) { vv.addEventListener("resize", sync); vv.addEventListener("scroll", sync); }
+  window.addEventListener("resize", sync);
+  document.addEventListener("focusin", e => {
+    sync();
+    const el = e.target; if (!el.closest?.(".sheet") || !el.matches("input,textarea,select")) return;
+    setTimeout(() => { sync(); el.scrollIntoView({block: "center", behavior: "smooth"}); }, 320);
+  });
+  document.addEventListener("focusout", () => setTimeout(sync, 120));
+  sync();
+})();
+
 /* ================= nav + boot ================= */
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.v));
 $("#back").onclick = () => go("more");

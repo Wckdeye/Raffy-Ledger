@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Raffy's Ledger</title>
 <meta name="theme-color" content="#090C12" media="(prefers-color-scheme: dark)">
 <meta name="theme-color" content="#F4F6FA" media="(prefers-color-scheme: light)">
@@ -299,6 +299,12 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 textarea.input{font:inherit;color:inherit}
 .hero .iconbtn{width:32px;height:32px;background:transparent;color:var(--muted)}
 body.privacy :is(.hero .big,.hero-grid .v,.pl .v,.row .a,.bar-row .amt,.cc-owed .v,.stmt .v,.kv .v,.brow .rt,.section-h .num,.stmt-tbl .ln span:last-child,.btnchip.fav small,.legend span,.chart text){filter:blur(7px);user-select:none}
+/* Keyboard handling: sheet sits on top of the keyboard and fits the space left */
+:root{--kb:0px;--vvh:100dvh}
+.sheet{bottom:var(--kb);max-height:calc(var(--vvh) - 12px);scroll-padding-bottom:24px}
+.sheet-in{padding-bottom:8px}
+body.kb .nav,body.kb .fab{display:none}
+body.kb .sheet{border-radius:16px 16px 0 0}
 </style>
 </head>
 <body>

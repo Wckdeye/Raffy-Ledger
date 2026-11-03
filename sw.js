@@ -1,5 +1,5 @@
 // Raffy's Ledger service worker: lets the app open with no internet.
-const VERSION = "ledger-v6";
+const VERSION = "ledger-v7";
 const SHELL = ["./", "./index.html", "./app.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {
