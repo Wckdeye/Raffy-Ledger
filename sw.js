@@ -1,6 +1,6 @@
 // Raffy's Ledger service worker: lets the app open with no internet,
 // and always picks up the newest version when there is internet.
-const VERSION = "ledger-v10";
+const VERSION = "ledger-v11";
 const SHELL = ["./", "./index.html", "./app.js", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"];
 const APP_FILES = /\/(index\.html|app\.js|manifest\.webmanifest)?$/;
 

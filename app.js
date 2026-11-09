@@ -124,7 +124,7 @@ const GROUPS = {
 const KINDS = {
   rent: {label: "Rent", income: "Rental", biz: "rental", charge: "Bill rent", monthly: true, icon: "key"},
   internet: {label: "Internet", income: "Internet business", biz: "internet", charge: "Bill", monthly: true, icon: "wifi"},
-  loan: {label: "Loan", income: null, biz: null, charge: "Lend more", monthly: false, icon: "coins"},
+  loan: {label: "Loan", income: null, biz: null, charge: "New loan", monthly: false, icon: "coins"},
   other: {label: "Other", income: "Other income", biz: null, charge: "Charge", monthly: false, icon: "user"},
 };
 const BIZ = {rental: {label: "Rental", name: "Rental property", icon: "key"}, internet: {label: "Internet", name: "Internet business", icon: "wifi"}};
@@ -151,7 +151,7 @@ function save() { persist(); render(); }
 function normalize(d) {
   d.accounts = d.accounts || {}; d.people = d.people || {}; d.txns = d.txns || {};
   d.cats = d.cats || clone(DEFAULT_CATS); d.cats.income = d.cats.income || []; d.cats.expense = d.cats.expense || [];
-  d.favs = d.favs || {};
+  d.favs = d.favs || {}; d.loans = d.loans || {};
   d.recurring = d.recurring || {}; d.plans = d.plans || {}; d.budgets = d.budgets || {}; d.goals = d.goals || {}; d.skips = d.skips || {};
   let changed = false;
   if ((d.ver || 1) < 2) {
@@ -386,8 +386,8 @@ function txnRow(t, o = {}) {
   if (t.type === "expense") { title = t.cat; sub = accName(t.acct); amt = "−" + fmt(t.amt); cls = "out"; icon = catIcon(t.cat); }
   else if (t.type === "income") { title = t.cat; sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = catIcon(t.cat); }
   else if (t.type === "transfer") { const toLib = kindOf(S.data.accounts[t.to]) === "liability"; title = toLib ? "Paid " + accName(t.to) : "Transfer"; sub = accName(t.acct) + " → " + accName(t.to); amt = fmt(t.amt); icon = toLib ? accIcon(t.to) : "swap"; }
-  else if (t.type === "ar_charge") { const k = pKind(t.person), loan = k === "loan"; title = (loan ? "Lent to " : "Billed ") + pName(t.person); sub = loan ? "From " + accName(t.acct) : KINDS[k].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; icon = loan ? "coins" : "bill"; }
-  else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = KINDS[pKind(t.person)].icon; }
+  else if (t.type === "ar_charge") { const k = pKind(t.person), loan = k === "loan"; title = (loan || t.loan ? "Lent to " : "Billed ") + pName(t.person) + (t.loan && S.data.loans[t.loan] ? " · " + S.data.loans[t.loan].name : ""); sub = loan ? "From " + accName(t.acct) : KINDS[k].label + " · receivable"; amt = fmt(t.amt); cls = "muted"; icon = loan ? "coins" : "bill"; }
+  else if (t.type === "ar_collect") { title = "Received from " + pName(t.person); sub = (t.loan && S.data.loans[t.loan] ? S.data.loans[t.loan].name + " · " : "") + accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = KINDS[pKind(t.person)].icon; }
   const b = t.type === "expense" && t.biz ? BIZ[t.biz]?.label : null; if (b) sub = b + " · " + sub;
   if (t.type === "adjust") { title = "Balance adjustment"; sub = accName(t.acct) + " · matched to actual"; amt = (t.delta < 0 ? "−" : "+") + fmt(t.delta); icon = "sliders"; cls = "muted"; }
   if (t.note) sub += " · " + t.note;
@@ -619,18 +619,20 @@ function renderOwed(v) {
     <div class="cc-top"><div class="cc-id"><span class="tile ${r > 0 ? "t-ar_charge" : "t-income"}">${ico(k.icon)}</span><div><h3>${esc(p.name)}</h3><div class="muted" style="font-size:12.5px">${esc(k.label)}${p.detail ? " · " + esc(p.detail) : ""}${k.monthly && p.monthly ? ` · ${pesoShort(p.monthly)}/mo · day ${p.dueDay || 1}` : ""}</div></div></div>
       <div class="cc-owed"><div class="v ${r > 0 ? "out" : ""}">${fmt(r)}</div><div class="muted" style="font-size:12px">${r < 0 ? "paid ahead" : r === 0 ? "settled" : "owes you"}</div></div></div>
     ${r > 0 ? `<div class="chips">${a.b[0] ? `<span class="pill ok">0–30d ${pesoShort(a.b[0])}</span>` : ""}${a.b[1] ? `<span class="pill warn">31–60d ${pesoShort(a.b[1])}</span>` : ""}${a.b[2] ? `<span class="pill bad">60d+ ${pesoShort(a.b[2])}</span>` : ""}</div>` : ""}
+    ${loansHTML(p)}
     <div class="hint">${a.last ? `Last paid ${fmt(a.last.amt)} on ${esc(dShort(a.last.date))}` : "No payments recorded yet"}</div>
     <div class="actions"><button type="button" class="btn primary" data-collect="${p.id}">${ico("coins")}Got paid</button>${r > 0 ? `<button type="button" class="btn" data-remind="${p.id}" aria-label="Remind ${esc(p.name)}">${ico("chat")}</button>` : ""}<button type="button" class="btn" data-charge="${p.id}">${ico(p.kind === "loan" ? "out" : "bill")}${esc(k.charge)}</button><button type="button" class="btn" data-person="${p.id}" aria-label="Edit ${esc(p.name)}">${ico("edit")}</button></div>
   </section>`; }).join("")}
   ${ps.length ? "" : `<div class="empty"><h2>${S.pfilter === "all" ? "Who owes you?" : "No one here yet"}</h2><p>Add tenants, internet subscribers, or anyone you've lent money to. Each gets a running balance and aging.</p></div>`}
   <button type="button" class="btn block" id="addperson">${ico("pluscircle")}Add person</button>
-  <p class="hint" style="margin:0">Rent and internet bills post to receivables automatically on each person's due day and count as income that month. A loan doesn't: it moves money from your account to "owed to me". "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
+  <p class="hint" style="margin:0">Rent and internet bills post to receivables automatically on each person's due day and count as income that month. A loan doesn't: it moves money out of the account you lend from and into "owed to me". Each loan is tracked on its own. "Got paid" reduces their balance and adds cash where you deposit it. If you bill internet subscribers here, don't also log that money under Income.</p>`;
   v.querySelectorAll("[data-pf]").forEach(b => b.onclick = () => { S.pfilter = b.dataset.pf; render(); });
   $("#addperson").onclick = () => openPerson(null, S.pfilter !== "all" ? S.pfilter : "rent");
   const ba = $("#billall"); if (ba) ba.onclick = () => billMonth(pending, mk);
   v.querySelectorAll("[data-collect]").forEach(b => b.onclick = () => openTxn({type: "collect", person: b.dataset.collect}));
   v.querySelectorAll("[data-remind]").forEach(b => b.onclick = () => openRemind(b.dataset.remind, rec[b.dataset.remind], ag[b.dataset.remind]));
-  v.querySelectorAll("[data-charge]").forEach(b => b.onclick = () => openCharge(b.dataset.charge));
+  v.querySelectorAll("[data-charge]").forEach(b => b.onclick = () => S.data.people[b.dataset.charge].kind === "loan" ? openNewLoan(b.dataset.charge) : openCharge(b.dataset.charge));
+  v.querySelectorAll("[data-loan]").forEach(b => b.onclick = () => openLoan(b.dataset.loan));
   v.querySelectorAll("[data-person]").forEach(b => b.onclick = () => openPerson(b.dataset.person));
 }
 function billMonth(list, mk) {
@@ -1005,6 +1007,77 @@ function accountsCard(bal) {
     ${open ? `<div class="acc-grid">${have.map(tile).join("")}</div>${owe.length ? `<div class="lbl" style="margin:14px 0 8px">Owed on cards &amp; loans</div><div class="acc-grid">${owe.map(tile).join("")}</div>` : ""}` : ""}</section>`;
 }
 
+/* ================= loans to people ================= */
+function personLoans(pid, all) {
+  const tx = allTxns().filter(t => t.person === pid);
+  return entries(S.data.loans).filter(l => l.person === pid).map(l => {
+    const lent = tx.filter(t => t.type === "ar_charge" && t.loan === l.id).reduce((s, t) => s + t.amt, 0);
+    const paid = tx.filter(t => t.type === "ar_collect" && t.loan === l.id).reduce((s, t) => s + t.amt, 0);
+    return {...l, lent, paid, bal: lent - paid};
+  }).filter(l => all || !l.closed || l.bal > 0).sort((a, b) => a.date.localeCompare(b.date));
+}
+/* Whatever the person owes that isn't tied to a specific loan (rent, internet, or old loans). */
+function unassigned(pid) {
+  const p = S.data.people[pid], tx = allTxns().filter(t => t.person === pid && !t.loan);
+  return (p.opening || 0) + tx.filter(t => t.type === "ar_charge").reduce((s, t) => s + t.amt, 0) - tx.filter(t => t.type === "ar_collect").reduce((s, t) => s + t.amt, 0);
+}
+function applyOptions(pid) {
+  const p = S.data.people[pid]; const ls = personLoans(pid).filter(l => l.bal > 0);
+  const un = unassigned(pid); const opts = ls.map(l => [l.id, `${l.name} · ${pesoShort(l.bal)}`, "coins"]);
+  const unLabel = p.kind === "loan" ? "Earlier balance" : KINDS[p.kind].label + " balance";
+  if (un > 0 || !opts.length) opts.push(["", `${unLabel}${un > 0 ? " · " + pesoShort(un) : ""}`, KINDS[p.kind].icon]);
+  return opts;
+}
+function loansHTML(p) {
+  const ls = personLoans(p.id); const un = unassigned(p.id);
+  if (!ls.length) return "";
+  return `<div class="loan-list">${ls.map(l => `<button type="button" class="loan-row" data-loan="${l.id}"><span class="tile sm ${l.bal > 0 ? "t-ar_charge" : "t-income"}">${ico("coins")}</span><span class="loan-txt"><span class="loan-n">${esc(l.name)}</span><span class="loan-s">${esc(dShort(l.date))}${l.date.slice(0, 4) !== today().slice(0, 4) ? " " + l.date.slice(0, 4) : ""} · lent ${pesoShort(l.lent)}</span>${progHTML(l.lent ? l.paid / l.lent : 0, l.bal <= 0 ? "ok" : "")}</span><span class="loan-b ${l.bal > 0 ? "out" : "in"}">${l.bal > 0 ? pesoShort(l.bal) : "Paid"}</span></button>`).join("")}
+    ${un ? `<div class="loan-row" style="cursor:default"><span class="tile sm t-neutral">${ico(KINDS[p.kind].icon)}</span><span class="loan-txt"><span class="loan-n">${p.kind === "loan" ? "Earlier balance" : esc(KINDS[p.kind].label) + " balance"}</span><span class="loan-s">${p.kind === "loan" ? "From before loans were tracked one by one" : "Bills and payments"}</span></span><span class="loan-b ${un > 0 ? "out" : "in"}">${pesoShort(un)}</span></div>` : ""}</div>`;
+}
+function openNewLoan(pid, loanId) {
+  const p = S.data.people[pid]; const n = personLoans(pid, true).length + 1; const L = loanId ? S.data.loans[loanId] : null;
+  openSheet(L ? `Lend more · ${L.name}` : `New loan to ${p.name}`, `
+  ${amtBox("nl-amt", 0)}
+  ${L ? "" : `<label class="field"><span class="lbl">Loan name</span><input class="input" id="nl-name" maxlength="40" placeholder="Loan ${n}" value=""></label>`}
+  <div class="field"><span class="lbl">Lent from</span>${chipsHTML("acct", accChips(a => kindOf(a) === "asset"), pref.get("lastAcct", {}).lend)}</div>
+  <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="nl-date" value="${today()}"></label>
+    <label class="field"><span class="lbl">Note</span><input class="input" id="nl-note" maxlength="80" placeholder="Optional"></label></div>
+  <p class="hint" style="margin:0">The amount comes out of the account you pick and goes into what ${esc(p.name)} owes you. It's not an expense.</p>
+  <div class="err" id="nl-err"></div>
+  <button type="button" class="btn primary block" id="nl-save">${ico("check")}Record loan</button>`, root => {
+    wireAmt(root, "nl-amt"); setTimeout(() => root.querySelector("#nl-amt").focus(), 60);
+    root.querySelector("#nl-save").onclick = () => {
+      const E = m => root.querySelector("#nl-err").textContent = m;
+      const amt = evalAmt(root.querySelector("#nl-amt").value); if (!amt) return E("Enter the amount you lent.");
+      const acct = val(root, "acct"); if (!acct) return E("Pick the account the money came from.");
+      const date = root.querySelector("#nl-date").value || today(); const note = root.querySelector("#nl-note").value.trim();
+      let lid = loanId;
+      if (!lid) { lid = newId(); S.data.loans[lid] = {person: pid, name: root.querySelector("#nl-name").value.trim() || `Loan ${n}`, date}; }
+      const t = {type: "ar_charge", person: pid, loan: lid, acct, amt, date, at: Date.now()}; if (note) t.note = note;
+      S.data.txns[newId()] = t;
+      const la = pref.get("lastAcct", {}); la.lend = acct; pref.set("lastAcct", la);
+      save(); closeSheet(); toast(`Lent ${fmt(amt)} from ${accName(acct)}`);
+    };
+  });
+}
+function openLoan(lid) {
+  const L = S.data.loans[lid]; const p = S.data.people[L.person]; const st = personLoans(L.person, true).find(x => x.id === lid);
+  const tx = allTxns().filter(t => t.loan === lid).sort((a, b) => b.date.localeCompare(a.date) || (b.at || 0) - (a.at || 0));
+  openSheet(`${p.name} · ${L.name}`, `
+  <div class="kv"><div><div class="k">Lent</div><div class="v">${fmt(st.lent)}</div></div><div><div class="k">Paid back</div><div class="v in">${fmt(st.paid)}</div></div><div><div class="k">Still owes</div><div class="v ${st.bal > 0 ? "out" : "in"}">${fmt(st.bal)}</div></div></div>
+  ${progHTML(st.lent ? st.paid / st.lent : 0, st.bal <= 0 ? "ok" : "")}
+  <div class="grid2"><button type="button" class="btn primary" id="lo-paid">${ico("coins")}Got paid</button><button type="button" class="btn" id="lo-more">${ico("out")}Lend more</button></div>
+  <div class="rows" id="lo-rows">${tx.map(t => txnRow(t)).join("") || `<p class="hint">No entries.</p>`}</div>
+  <label class="field"><span class="lbl">Loan name</span><input class="input" id="lo-name" maxlength="40" value="${esc(L.name)}"></label>
+  <label class="check"><input type="checkbox" id="lo-closed"${L.closed ? " checked" : ""}>Hide once fully paid</label>
+  <button type="button" class="btn block" id="lo-save">${ico("check")}Save</button>`, root => {
+    root.querySelector("#lo-paid").onclick = () => openTxn({type: "collect", person: L.person, loan: lid, amt: st.bal > 0 ? st.bal : null});
+    root.querySelector("#lo-more").onclick = () => openNewLoan(L.person, lid);
+    root.querySelectorAll("#lo-rows [data-tx]").forEach(b => b.onclick = () => { const t = {...S.data.txns[b.dataset.tx], id: b.dataset.tx}; t.type === "ar_charge" ? openCharge(t.person, t) : openTxn({edit: t}); });
+    root.querySelector("#lo-save").onclick = () => { L.name = root.querySelector("#lo-name").value.trim() || L.name; L.closed = root.querySelector("#lo-closed").checked; save(); closeSheet(); toast("Saved"); };
+  });
+}
+
 /* ================= account ledger ================= */
 const openAcct = id => { S.acctId = id; S.acctMonth = S.acctMonth || "all"; go("acct"); };
 /* How an entry changes this account's shown balance (money held, or amount owed for cards and loans). */
@@ -1191,7 +1264,15 @@ function openTxn(o = {}) {
         dyn.querySelectorAll('input[name="to"]').forEach(r => r.onchange = drawInterest); drawInterest();
       }
       else if (type === "collect") { const ps = people().map(p => [p.id, p.name, KINDS[p.kind].icon]);
-        dyn.innerHTML = ps.length ? `<div class="field"><span class="lbl">Who paid you</span>${chipsHTML("person", ps, sel.person)}</div><div class="field"><span class="lbl">Deposited to</span>${chipsHTML("acct", assets, sel.acct || last.collect)}</div>` : `<p class="hint" style="margin:0">Add people in the "Owed to me" tab first.</p>`; }
+        dyn.innerHTML = ps.length ? `<div class="field"><span class="lbl">Who paid you</span>${chipsHTML("person", ps, sel.person)}</div><div class="field" id="f-apply" hidden></div><div class="field"><span class="lbl">Deposited to</span>${chipsHTML("acct", assets, sel.acct || last.collect)}</div>` : `<p class="hint" style="margin:0">Add people in the "Owed to me" tab first.</p>`;
+        const drawApply = () => {
+          const box = dyn.querySelector("#f-apply"); if (!box) return;
+          const pid = val(dyn, "person") || sel.person; const opts = pid ? applyOptions(pid) : [];
+          box.hidden = opts.length < 2; if (box.hidden) { box.innerHTML = opts.length ? `<input type="radio" name="loan" value="${esc(opts[0][0])}" checked hidden>` : ""; return; }
+          const keep = e?.loan ?? o.loan ?? sel.loan; const def = opts.some(x => x[0] === keep) ? keep : opts[0][0];
+          box.innerHTML = `<span class="lbl">Apply to</span>${chipsHTML("loan", opts.map(([v, l, ic]) => [v, l, ic]), def)}`;
+        };
+        dyn.querySelectorAll('input[name="person"]').forEach(r => r.onchange = drawApply); drawApply(); }
     }
     draw();
     root.querySelectorAll("[data-type]").forEach(b => b.onclick = () => { capture(); type = b.dataset.type; root.querySelectorAll("[data-type]").forEach(x => x.setAttribute("aria-pressed", x === b)); root.querySelector("#f-err").textContent = ""; draw(); });
@@ -1229,7 +1310,7 @@ function openTxn(o = {}) {
         if (ib && !ib.hidden) { const r = readAmt(dyn, "#f-intamt", {label: "interest"}); if (r.err) return err(r.err);
           if (r.v) { if (r.v >= amt) return err("Interest must be less than the total payment."); t.amt = amt - r.v; if (!S.data.cats.expense.includes("Interest & fees")) S.data.cats.expense.push("Interest & fees"); extra = {id: newId(), type: "expense", cat: "Interest & fees", acct: t.acct, amt: r.v, date, at: Date.now() + 1, pairTo: t.to, note: "Interest · " + accName(t.to)}; } }
       }
-      else if (type === "collect") { t.type = "ar_collect"; t.person = g("person"); t.acct = g("acct"); if (!t.person) return err("Pick who paid you."); if (!t.acct) return err("Pick where you deposited it."); }
+      else if (type === "collect") { t.type = "ar_collect"; t.person = g("person"); t.acct = g("acct"); const ln = g("loan"); if (ln) t.loan = ln; if (!t.person) return err("Pick who paid you."); if (!t.acct) return err("Pick where you deposited it."); }
       if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
       const before = t.type === "expense" ? (budgetUse(t.cat, mKey(t.date))?.spent || 0) - (e && e.type === "expense" && e.cat === t.cat && mKey(e.date) === mKey(t.date) ? e.amt : 0) : 0;
       if (extra) { const {id, ...body} = extra; S.data.txns[id] = body; }
@@ -1241,9 +1322,9 @@ function openTxn(o = {}) {
   });
 }
 function openCharge(pid, edit) {
-  const p = S.data.people[pid]; const loan = p.kind === "loan";
+  const p = S.data.people[pid]; const loan = p.kind === "loan" || !!edit?.loan;
   const last = pref.get("lastAcct", {});
-  openSheet(edit ? "Edit charge" : (loan ? "Lend to " : "Charge ") + p.name, `
+  openSheet(edit ? (edit.loan ? "Edit loan amount" : "Edit charge") : (loan ? "Lend to " : "Charge ") + p.name, `
   <div class="amt-wrap"><span>₱</span><input class="amt-input" id="c-amt" inputmode="decimal" placeholder="0.00" value="${amtVal(edit?.amt || (!loan && p.monthly) || 0)}" aria-label="Amount"></div>
   ${loan ? `<div class="field"><span class="lbl">Lent from</span>${chipsHTML("acct", accChips(a => kindOf(a) === "asset"), edit?.acct || last.lend)}</div>` : `<p class="hint" style="margin:0">Counts as ${esc(KINDS[p.kind].income)} income on this date and adds to what ${esc(p.name)} owes you.</p>`}
   <div class="grid2"><label class="field"><span class="lbl">Date</span><input class="input" type="date" id="c-date" value="${edit?.date || today()}"></label>
@@ -1256,7 +1337,7 @@ function openCharge(pid, edit) {
       const amt = parseAmt(root.querySelector("#c-amt").value); if (!amt) return err("Enter an amount greater than zero.");
       const date = root.querySelector("#c-date").value; if (!date) return err("Pick a date.");
       const t = {id: edit?.id || newId(), type: "ar_charge", person: pid, amt, date, at: edit?.at || Date.now()};
-      if (edit?.period) t.period = edit.period;
+      if (edit?.period) t.period = edit.period; if (edit?.loan) t.loan = edit.loan;
       const note = root.querySelector("#c-note").value.trim(); if (note) t.note = note;
       if (loan) { t.acct = val(root, "acct"); if (!t.acct) return err("Pick the account the money came from."); const la = pref.get("lastAcct", {}); la.lend = t.acct; pref.set("lastAcct", la); }
       putTxn(t); closeSheet(); toast(edit ? "Saved" : loan ? "Loan recorded" : "Charged");
@@ -1401,6 +1482,7 @@ function openAccount(id, groupDefault) {
     <label class="field"><span class="lbl">Monthly amortization</span><input class="input num" id="a-monthly" inputmode="decimal" placeholder="0.00" value="${amtVal(a.monthly)}"></label>
     <label class="field"><span class="lbl">Due day</span><input class="input num" id="a-day" type="number" min="1" max="31" value="${a.dueDay || 1}"></label>
   </div>
+  ${id ? "" : `<div class="field" id="a-proc-f"><span class="lbl">Where did the borrowed money go?</span>${chipsHTML("proc", [["", "Nowhere yet / already counted", "dots"], ...accChips(x => kindOf(x) === "asset")], "")}</div>`}
   ${id ? `<label class="check"><input type="checkbox" id="a-arch"${a.archived ? " checked" : ""}>Hide this account</label>` : ""}
   <p class="hint" style="margin:0" id="a-hint"></p>
   <div class="err" id="a-err"></div>
@@ -1409,9 +1491,9 @@ function openAccount(id, groupDefault) {
     const rb = root.querySelector("#a-rec"); if (rb) rb.onclick = () => openReconcile(id);
     const grp = () => val(root, "grp") || "bank";
     const sync = () => { const g = grp(), lib = GROUPS[g].kind === "liability";
-      root.querySelector("#a-limit-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-card-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-loan-f").hidden = g !== "loan";
+      root.querySelector("#a-limit-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-card-f").hidden = !(g === "card" || g === "bnpl"); root.querySelector("#a-loan-f").hidden = g !== "loan"; const pf = root.querySelector("#a-proc-f"); if (pf) pf.hidden = g !== "loan";
       root.querySelector("#a-open-l").textContent = g === "loan" ? "Balance at start" : lib ? "Owed at start" : "Starting balance";
-      root.querySelector("#a-hint").textContent = g === "loan" ? "Enter the remaining loan balance when you started tracking. Pay it from I owe; you can split out the interest each time." : "Starting balance is what the account held when you started tracking. For cards, it's what you owed."; };
+      root.querySelector("#a-hint").textContent = g === "loan" ? (id ? "Balance at start is what you still owed when you started tracking." : "For a loan you just got, enter the full amount and pick where the money went: that account goes up and the loan shows what you owe. For an older loan, enter what you still owe and leave it on Nowhere yet.") : "Starting balance is what the account held when you started tracking. For cards, it's what you owed."; };
     root.querySelectorAll('input[name="grp"]').forEach(r => r.onchange = sync); sync();
     root.querySelector("#a-save").onclick = () => {
       const E = m => root.querySelector("#a-err").textContent = m;
@@ -1426,7 +1508,9 @@ function openAccount(id, groupDefault) {
       if (g === "loan") { const m = readAmt(root, "#a-monthly", {label: "monthly amortization"}); if (m.err) return E(m.err); if (m.v) rec.monthly = m.v; rec.dueDay = Math.min(31, Math.max(1, parseInt(root.querySelector("#a-day").value, 10) || 1)); }
       const ar = root.querySelector("#a-arch"); if (ar) rec.archived = ar.checked;
       if (!id) rec.order = Object.keys(S.data.accounts).length;
-      S.data.accounts[id || newId()] = rec; save(); closeSheet(); toast(id ? "Saved" : "Added");
+      const aid = id || newId(); const proc = !id && g === "loan" ? val(root, "proc") : "";
+      if (proc && rec.opening) { S.data.txns[newId()] = {type: "transfer", acct: aid, to: proc, amt: rec.opening, date: today(), at: Date.now(), note: "Loan proceeds"}; rec.opening = 0; }
+      S.data.accounts[aid] = rec; save(); closeSheet(); toast(id ? "Saved" : proc ? `Added. ${accName(proc)} went up` : "Added");
     };
   });
 }
@@ -1446,7 +1530,9 @@ function openPerson(id, kindDefault) {
     <label class="check"><input type="checkbox" id="p-auto"${p.auto === false ? "" : " checked"}>Post the bill to receivables automatically on the due day</label>
     <label class="field"><span class="lbl">Start billing from</span><input class="input" type="month" id="p-from" value="${p.billFrom || mKey(today())}"></label>
   </div>
-  <label class="field"><span class="lbl">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
+  <label class="field"><span class="lbl" id="p-open-l">Already owes you</span><input class="input num" id="p-open" inputmode="decimal" placeholder="0.00" value="${amtVal(p.opening)}"></label>
+  ${id ? "" : `<div id="p-lend-f" class="stack" style="gap:10px"><label class="check"><input type="checkbox" id="p-lendnow">I'm lending this now. Take it out of my account</label><div id="p-lendacct" hidden><div class="field"><span class="lbl">Lent from</span>${chipsHTML("pacct", accChips(a => kindOf(a) === "asset"), pref.get("lastAcct", {}).lend)}</div><label class="field" style="margin-top:10px"><span class="lbl">Loan name</span><input class="input" id="p-loanname" maxlength="40" placeholder="e.g. Tuition, Motor repair"></label></div></div>`}
+  ${id ? `<button type="button" class="btn block" id="p-newloan">${ico("coins")}Record a new loan to ${esc(p.name)}</button>` : ""}
   <p class="hint" style="margin:0" id="p-hint"></p>
   ${id ? `<label class="check"><input type="checkbox" id="p-arch"${p.archived ? " checked" : ""}>Hide (moved out / settled)</label>` : ""}
   <div class="err" id="p-err"></div>
@@ -1455,9 +1541,14 @@ function openPerson(id, kindDefault) {
       const k = val(root, "kind") || "rent";
       root.querySelector("#p-monthly-f").hidden = !KINDS[k].monthly; root.querySelector("#p-auto-f").hidden = !KINDS[k].monthly;
       root.querySelector("#p-detail-l").textContent = k === "rent" ? "Unit" : k === "internet" ? "Plan / area" : "Detail";
-      root.querySelector("#p-hint").textContent = k === "loan" ? "Enter what they owe you today. Lend more later from their card; it'll come out of the account you pick." : "Amounts owed from before you started tracking count as over 60 days.";
+      const lf = root.querySelector("#p-lend-f"); if (lf) lf.hidden = k !== "loan";
+      const now = root.querySelector("#p-lendnow")?.checked && k === "loan";
+      root.querySelector("#p-open-l").textContent = now ? "Amount you're lending" : "Already owes you";
+      root.querySelector("#p-hint").textContent = k === "loan" ? (now ? "This comes out of the account you pick, and starts their first loan." : "Old loans from before you started tracking: no account is touched. For money you lend from now on, tick the box, or use New loan on their card.") : "Amounts owed from before you started tracking count as over 60 days.";
     };
     root.querySelectorAll('input[name="kind"]').forEach(r => r.onchange = sync); sync();
+    const ln = root.querySelector("#p-lendnow"); if (ln) ln.onchange = () => { root.querySelector("#p-lendacct").hidden = !ln.checked; sync(); };
+    const nl = root.querySelector("#p-newloan"); if (nl) nl.onclick = () => openNewLoan(id);
     root.querySelector("#p-save").onclick = () => {
       const E = m => root.querySelector("#p-err").textContent = m;
       const kind = val(root, "kind") || "rent";
@@ -1468,7 +1559,16 @@ function openPerson(id, kindDefault) {
       const rec = {...p, name, kind, detail: root.querySelector("#p-detail").value.trim(), monthly, dueDay, opening: o.v};
       if (KINDS[kind].monthly) { rec.auto = root.querySelector("#p-auto").checked; rec.billFrom = root.querySelector("#p-from").value || mKey(today()); } else { delete rec.auto; delete rec.billFrom; }
       const ar = root.querySelector("#p-arch"); if (ar) rec.archived = ar.checked;
-      S.data.people[id || newId()] = rec; closeSheet(); if (!accrue()) toast(id ? "Saved" : "Added"); save();
+      const pid = id || newId();
+      if (!id && kind === "loan" && root.querySelector("#p-lendnow")?.checked) {
+        const acct = val(root, "pacct"); if (!acct) return E("Pick the account you're lending from.");
+        if (!o.v) return E("Enter the amount you're lending.");
+        rec.opening = 0; const lid = newId();
+        S.data.loans[lid] = {person: pid, name: root.querySelector("#p-loanname").value.trim() || "Loan 1", date: today()};
+        S.data.txns[newId()] = {type: "ar_charge", person: pid, loan: lid, acct, amt: o.v, date: today(), at: Date.now()};
+        const la = pref.get("lastAcct", {}); la.lend = acct; pref.set("lastAcct", la);
+      }
+      S.data.people[pid] = rec; closeSheet(); if (!accrue()) toast(id ? "Saved" : "Added"); save();
     };
   });
 }

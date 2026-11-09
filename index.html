@@ -315,6 +315,18 @@ body.kb .sheet{border-radius:16px 16px 0 0}
 .rot-up{transform:rotate(-90deg)} .rot-down{transform:rotate(90deg)}
 .row .a small.run{display:block;font-size:11px;color:var(--muted);font-weight:400;text-align:right;margin-top:1px}
 body.privacy .row .a small.run{filter:blur(6px)}
+.loan-list{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;padding:2px 12px}
+.loan-row{display:flex;align-items:center;gap:10px;padding:9px 0;border:0;border-top:1px solid var(--line);background:none;width:100%;text-align:left;color:var(--ink)}
+.loan-list>.loan-row:first-child{border-top:0}
+.loan-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.loan-n{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.loan-s{font-size:12px;color:var(--muted)}
+.loan-txt .prog{height:4px}
+.loan-b{font-family:var(--f-num);font-weight:600;font-size:14px;white-space:nowrap}
+body.privacy :is(.loan-b,.loan-s){filter:blur(6px)}
+.cc .actions{flex-wrap:nowrap}
+.cc .actions .btn{padding:9px 11px;min-width:0;white-space:nowrap}
+.cc .actions .btn.primary{flex:1}
 </style>
 </head>
 <body>
