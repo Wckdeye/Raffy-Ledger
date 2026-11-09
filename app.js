@@ -84,7 +84,7 @@ const pad = n => String(n).padStart(2, "0");
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 const fmt = c => "₱" + (Math.abs(c) / 100).toLocaleString("en-PH", {minimumFractionDigits: 2, maximumFractionDigits: 2});
 const sfmt = c => (c < 0 ? "−" : "") + fmt(c);
-const pesoShort = c => { const n = Math.abs(c) / 100; const s = n >= 1e6 ? (n / 1e6).toFixed(2) + "M" : n.toLocaleString("en-PH", {maximumFractionDigits: 0}); return (c < 0 ? "−" : "") + "₱" + s; };
+const pesoShort = c => { const n = Math.abs(c) / 100; const s = n >= 1e6 ? (n / 1e6).toLocaleString("en-PH", {minimumFractionDigits: 2, maximumFractionDigits: 3}) + "M" : n.toLocaleString("en-PH", {minimumFractionDigits: 2, maximumFractionDigits: 2}); return (c < 0 ? "−" : "") + "₱" + s; };
 const kShort = c => { const n = Math.abs(c) / 100; return (c < 0 ? "−" : "") + (n >= 1e6 ? (n / 1e6).toFixed(1) + "M" : n >= 1e3 ? Math.round(n / 1e3) + "k" : Math.round(n)); };
 const parseAmt = s => { const n = Number(String(s ?? "").replace(/[₱,\s]/g, "")); return isFinite(n) && n > 0 ? Math.round(n * 100) : null; };
 /* Amount boxes accept sums like 120+85+40 or 3*150. */
@@ -338,7 +338,7 @@ function openSheet(title, html, mount) {
   r.innerHTML = `<div class="scrim" data-close></div><div class="sheet" role="dialog" aria-modal="true" aria-label="${esc(title)}"><div class="sheet-in"><div class="grab"></div><div class="sheet-h"><h2>${esc(title)}</h2><button type="button" class="x" data-close aria-label="Close">×</button></div>${html}</div></div>`;
   document.body.style.overflow = "hidden";
   r.querySelectorAll("[data-close]").forEach(b => b.onclick = closeSheet);
-  mount?.(r.querySelector(".sheet-in"));
+  mount?.(r.querySelector(".sheet-in")); requestAnimationFrame(() => fitNums(r));
 }
 document.addEventListener("keydown", e => { if (e.key === "Escape") closeSheet(); });
 const chipsHTML = (name, items, sel) => `<div class="chips" role="radiogroup">${items.map(([v, l, ic]) => `<label class="chip"><input type="radio" name="${name}" value="${esc(v)}"${v === sel ? " checked" : ""}><span>${ic ? ico(ic) : ""}${esc(l)}</span></label>`).join("")}</div>`;
@@ -366,7 +366,19 @@ $("#nav-in").innerHTML = NAV.map(([k, l, ic]) => `<button type="button" data-v="
 $("#fab").innerHTML = ico("plus");
 $("#back").innerHTML = ico("back");
 const navOf = v => v === "acct" ? navOf(S.from || "home") : SUB[v] ? "more" : v;
-function render() {
+/* Shrink long amounts a little so centavos always fit their box. */
+function fitNums(root = document) {
+  root.querySelectorAll(".acc-v,.hero-grid .v,.pl .v,.cc-owed .v,.kv .v,.stmt .v,.loan-b,.brow .rt,.row .a").forEach(el => {
+    el.style.fontSize = ""; const fits = () => el.scrollWidth <= el.clientWidth && el.getBoundingClientRect().width + 0.5 >= el.scrollWidth;
+    if (fits()) return;
+    let size = parseFloat(getComputedStyle(el).fontSize);
+    while (!fits() && size > 10) { size -= 0.5; el.style.fontSize = size + "px"; }
+    if (size > 10) el.style.fontSize = (size - 0.5) + "px";
+  });
+}
+window.addEventListener("resize", () => fitNums());
+function render() { _render(); requestAnimationFrame(() => fitNums()); }
+function _render() {
   const v = $("#view"); const ready = !!S.data;
   $("#nav").hidden = !ready; $("#fab").hidden = !ready;
   document.querySelectorAll(".nav button").forEach(b => b.setAttribute("aria-current", b.dataset.v === navOf(S.view) ? "page" : "false"));
