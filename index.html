@@ -298,13 +298,21 @@ h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance;letter-spacing:
 .fav-row{display:grid;grid-template-columns:auto minmax(0,1fr) minmax(0,6.5rem) auto;gap:8px;align-items:center}
 textarea.input{font:inherit;color:inherit}
 .hero .iconbtn{width:32px;height:32px;background:transparent;color:var(--muted)}
-body.privacy :is(.hero .big,.hero-grid .v,.pl .v,.row .a,.bar-row .amt,.cc-owed .v,.stmt .v,.kv .v,.brow .rt,.section-h .num,.stmt-tbl .ln span:last-child,.btnchip.fav small,.legend span,.chart text){filter:blur(7px);user-select:none}
+body.privacy :is(.acc-v,#acc-toggle .num,.hero .big,.hero-grid .v,.pl .v,.row .a,.bar-row .amt,.cc-owed .v,.stmt .v,.kv .v,.brow .rt,.section-h .num,.stmt-tbl .ln span:last-child,.btnchip.fav small,.legend span,.chart text){filter:blur(7px);user-select:none}
 /* Keyboard handling: sheet sits on top of the keyboard and fits the space left */
 :root{--kb:0px;--vvh:100dvh}
 .sheet{bottom:var(--kb);max-height:calc(var(--vvh) - 12px);scroll-padding-bottom:24px}
 .sheet-in{padding-bottom:8px}
 body.kb .nav,body.kb .fab{display:none}
 body.kb .sheet{border-radius:16px 16px 0 0}
+.acc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.acc-tile{display:flex;align-items:center;gap:10px;min-width:0;padding:10px;border:1px solid var(--line);border-radius:12px;background:var(--surface-2);text-align:left;color:var(--ink)}
+.acc-tile:active{transform:scale(.98)}
+.acc-txt{display:flex;flex-direction:column;min-width:0}
+.acc-n{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.acc-v{font-family:var(--f-num);font-weight:600;font-size:14.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#acc-toggle .ic{width:14px;height:14px}
+.rot-up{transform:rotate(-90deg)} .rot-down{transform:rotate(90deg)}
 </style>
 </head>
 <body>

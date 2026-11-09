@@ -456,6 +456,7 @@ function renderHome(v) {
       <div><div class="k">${ico("card")}I owe</div><div class="v out">${pesoShort(owed)}</div></div>
     </div>
   </section>
+  ${accountsCard(bal)}
   <div class="quick">
     <button type="button" data-q="expense"><span class="tile t-expense">${ico("out")}</span>Expense</button>
     <button type="button" data-q="income"><span class="tile t-income">${ico("in")}</span>Income</button>
@@ -499,6 +500,8 @@ function renderHome(v) {
     if (q === "pay") { const first = dues[0]; openTxn({type: "transfer", to: first?.a.id || accounts().find(a => kindOf(a) === "liability")?.id, amt: first ? (first.loan ? first.a.monthly : first.st.left) : null}); }
     else openTxn({type: q});
   });
+  v.querySelectorAll("[data-hacc]").forEach(b => b.onclick = () => openAccount(b.dataset.hacc));
+  const at = $("#acc-toggle"); if (at) at.onclick = () => { pref.set("accOpen", !pref.get("accOpen", true)); render(); };
   $("#eye").onclick = () => { privacy = !privacy; pref.set("privacy", privacy); applyPrivacy(); render(); };
   v.querySelectorAll("[data-fav]").forEach(b => b.onclick = () => useFav(b.dataset.fav));
   const fe = $("#fav-edit"); if (fe) fe.onclick = openFavorites;
@@ -986,6 +989,18 @@ function renderSetup(v) {
     S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today(), ver: 3})[0];
     save(); toast("Books created");
   };
+}
+
+/* ================= home: account balances ================= */
+function accountsCard(bal) {
+  const accs = accounts(); if (!accs.length) return "";
+  const open = pref.get("accOpen", true);
+  const have = accs.filter(a => kindOf(a) === "asset"), owe = accs.filter(a => kindOf(a) === "liability" && bal[a.id]);
+  const tile = a => { const lib = kindOf(a) === "liability", b = bal[a.id];
+    return `<button type="button" class="acc-tile" data-hacc="${a.id}"><span class="tile sm ${lib ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span><span class="acc-txt"><span class="acc-n">${esc(a.name)}</span><span class="acc-v ${lib ? "out" : b < 0 ? "out" : ""}">${pesoShort(b)}</span></span></button>`; };
+  const sum = have.reduce((s, a) => s + bal[a.id], 0);
+  return `<section class="card"><div class="section-h" style="margin-bottom:${open ? 12 : 0}px"><h2>Accounts</h2><button type="button" class="btnchip" id="acc-toggle" aria-expanded="${open}"><span class="num">${pesoShort(sum)}</span>${ico("chev", open ? "rot-up" : "rot-down")}</button></div>
+    ${open ? `<div class="acc-grid">${have.map(tile).join("")}</div>${owe.length ? `<div class="lbl" style="margin:14px 0 8px">Owed on cards &amp; loans</div><div class="acc-grid">${owe.map(tile).join("")}</div>` : ""}` : ""}</section>`;
 }
 
 /* ================= quality of life ================= */
