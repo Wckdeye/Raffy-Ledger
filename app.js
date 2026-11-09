@@ -898,7 +898,8 @@ function renderSecurity(v) {
   v.innerHTML = `
   <section class="card stack" style="gap:12px">
     <div class="section-h" style="margin:0"><div class="cc-id"><span class="tile sm ${L ? "t-income" : "t-neutral"}">${ico("lock")}</span><h2>PIN lock</h2></div><span class="pill ${L ? "ok" : ""}">${L ? "On" : "Off"}</span></div>
-    <p class="hint" style="margin:0">Asks for your PIN when the app opens or after a minute in the background. It keeps people out of the app; it doesn't encrypt the data on the phone.</p>
+    <p class="hint" style="margin:0">Keeps people out of the app. It doesn't encrypt the data on the phone.</p>
+    ${L ? `<div class="field"><span class="lbl">Ask for PIN again after being away for</span><div class="seg2" role="group" style="grid-auto-flow:row;grid-template-columns:repeat(3,1fr)">${LOCK_AFTER.map(([m, l]) => `<button type="button" data-lockafter="${m}" aria-pressed="${pref.get("lockAfter", 5) === m}">${l}</button>`).join("")}</div><span class="hint">This counts even if you swipe the app closed and open it again.</span></div>` : ""}
     <div class="actions">${L ? `<button type="button" class="btn" id="pin-change">${ico("edit")}Change PIN</button><button type="button" class="btn danger" id="pin-off">Turn off</button>` : `<button type="button" class="btn primary" id="pin-on">${ico("lock")}Set a PIN</button>`}</div>
   </section>
   <section class="card stack" style="gap:12px">
@@ -908,6 +909,7 @@ function renderSecurity(v) {
     <div id="importconfirm"></div>
   </section>`;
   const on = $("#pin-on"); if (on) on.onclick = () => pinSetup(null);
+  v.querySelectorAll("[data-lockafter]").forEach(b => b.onclick = () => { pref.set("lockAfter", +b.dataset.lockafter); render(); toast("Saved"); });
   const ch = $("#pin-change"); if (ch) ch.onclick = () => pinVerifySheet("Enter current PIN", () => pinSetup(L));
   const off = $("#pin-off"); if (off) off.onclick = () => pinVerifySheet("Enter PIN to turn off", () => { try { localStorage.removeItem(LOCK_KEY); } catch {} closeSheet(); render(); toast("PIN lock off"); });
   $("#exportjson").onclick = () => { S.data.lastBackup = today(); download(`ledger-backup-${today()}.json`, JSON.stringify({app: "raffy-ledger", version: 2, exported: new Date().toISOString(), data: S.data}), "application/json"); save(); toast("Backup saved to Downloads"); };
@@ -954,7 +956,7 @@ function showLock() {
   const msg = r.querySelector("#lk-msg");
   const kp = wireKeypad(r, L.len, r.querySelector("#lk-dots"), async pin => {
     if (Date.now() < coolUntil) { msg.textContent = `Too many tries. Wait ${Math.ceil((coolUntil - Date.now()) / 1000)}s.`; return; }
-    if (await hashPin(pin, L.salt) === L.hash) { fails = 0; sessionUnlocked = true; r.innerHTML = ""; render(); return; }
+    if (await hashPin(pin, L.salt) === L.hash) { fails = 0; sessionUnlocked = true; markSeen(); r.innerHTML = ""; render(); return; }
     kp.shake(); fails++; msg.textContent = fails >= 5 ? "Too many tries. Wait 30 seconds." : "Wrong PIN, try again";
     if (fails >= 5) { coolUntil = Date.now() + 30000; fails = 0; }
   });
@@ -963,7 +965,18 @@ function showLock() {
     let armed = false; r.querySelector("#lk-erase").onclick = e => { if (!armed) { armed = true; e.target.textContent = "Tap again to erase all data"; return; } try { localStorage.removeItem(KEY); localStorage.removeItem(LOCK_KEY); } catch {} S.data = null; sessionUnlocked = true; r.innerHTML = ""; render(); };
   };
 }
-document.addEventListener("visibilitychange", () => { if (document.hidden) hiddenAt = Date.now(); else if (lockState() && sessionUnlocked && hiddenAt && Date.now() - hiddenAt > 60000) showLock(); });
+/* Lock again only after the chosen time away, even if the app was closed and reopened. */
+const LOCK_AFTER = [[0, "Every time"], [1, "1 minute"], [5, "5 minutes"], [15, "15 minutes"], [60, "1 hour"]];
+const lockGrace = () => pref.get("lockAfter", 5) * 60000;
+const markSeen = () => { if (sessionUnlocked) { try { localStorage.setItem("ledger-last-seen", String(Date.now())); } catch {} } };
+const lastSeen = () => { try { return +localStorage.getItem("ledger-last-seen") || 0; } catch { return 0; } };
+setInterval(markSeen, 15000);
+window.addEventListener("pagehide", markSeen);
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) { hiddenAt = Date.now(); markSeen(); return; }
+  if (lockState() && sessionUnlocked && hiddenAt && Date.now() - hiddenAt > lockGrace()) showLock();
+});
+function maybeLock() { if (lockState() && Date.now() - lastSeen() <= lockGrace() && lockGrace() > 0) { sessionUnlocked = true; markSeen(); return; } showLock(); }
 
 $("#importfile").onchange = async e => {
   const f = e.target.files[0]; e.target.value = ""; if (!f) return;
@@ -1611,13 +1624,26 @@ function openPerson(id, kindDefault) {
 /* ================= nav + boot ================= */
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.v));
 $("#back").onclick = () => go(S.view === "acct" ? (S.from || "home") : "more");
+/* Android back gesture: close the open form, then step back through screens, and only leave from Home after a second swipe. */
+let exitArmed = 0;
+const guard = () => { try { history.pushState({ledger: 1}, ""); } catch {} };
+try { if (!history.state?.ledger) { history.replaceState({root: 1}, ""); guard(); } } catch {}
+window.addEventListener("popstate", () => {
+  if ($("#lock-root").innerHTML) return guard();
+  if ($("#sheet-root").innerHTML) { closeSheet(); return guard(); }
+  if (S.view === "acct") { go(S.from || "home"); return guard(); }
+  if (SUB[S.view]) { go("more"); return guard(); }
+  if (S.view !== "home") { go("home"); return guard(); }
+  if (Date.now() - exitArmed < 2000) { markSeen(); history.back(); return; }
+  exitArmed = Date.now(); toast("Swipe back again to exit"); guard();
+});
 $("#fab").onclick = () => openTxn();
 $("#mprev").onclick = () => { S.month = mShift(S.month, -1); render(); };
 $("#mnext").onclick = () => { S.month = mShift(S.month, 1); render(); };
 window.addEventListener("storage", e => { if (e.key === KEY) { const raw = load(); S.data = raw ? normalize(raw)[0] : null; render(); } });
 accrue();
 render();
-showLock();
+maybeLock();
 let lastDayChecked = today();
 document.addEventListener("visibilitychange", () => { if (!document.hidden && today() !== lastDayChecked) { lastDayChecked = today(); if (accrue()) render(); } });
 if ("serviceWorker" in navigator) {
