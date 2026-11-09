@@ -138,7 +138,7 @@ const DEFAULT_CATS = {
   expense: ["Groceries", "Baby", "Fuel & transport", "Utilities & load", "Food & dining", "Household", "Shopping", "Health", "Personal", "Subscriptions", "Family & gifts", "Interest & fees", ...BIZ_CATS, "Other"],
 };
 const NAV = [["home", "Home", "grid"], ["activity", "Activity", "list"], ["owe", "I owe", "card"], ["owed", "Owed to me", "coins"], ["more", "More", "menu"]];
-const SUB = {reports: "Reports", budgets: "Budgets", goals: "Savings goals", recurring: "Recurring", accounts: "Accounts", security: "Security & backup"};
+const SUB = {acct: "Account", reports: "Reports", budgets: "Budgets", goals: "Savings goals", recurring: "Recurring", accounts: "Accounts", security: "Security & backup"};
 const TYPES = [["expense", "Expense", "out"], ["income", "Income", "in"], ["transfer", "Transfer", "swap"], ["collect", "Got paid", "coins"]];
 
 /* ================= storage ================= */
@@ -365,7 +365,7 @@ function readAmt(root, sel, {required, label}) {
 $("#nav-in").innerHTML = NAV.map(([k, l, ic]) => `<button type="button" data-v="${k}">${ico(ic)}${l}</button>`).join("");
 $("#fab").innerHTML = ico("plus");
 $("#back").innerHTML = ico("back");
-const navOf = v => SUB[v] ? "more" : v;
+const navOf = v => v === "acct" ? navOf(S.from || "home") : SUB[v] ? "more" : v;
 function render() {
   const v = $("#view"); const ready = !!S.data;
   $("#nav").hidden = !ready; $("#fab").hidden = !ready;
@@ -377,10 +377,11 @@ function render() {
   const titles = {home: "Ledger", activity: "Activity", owe: "I owe", owed: "Owed to me", more: "More", ...SUB};
   if (!titles[S.view]) S.view = "home";
   $("#title").textContent = titles[S.view];
-  ({home: renderHome, activity: renderActivity, owe: renderOwe, owed: renderOwed, more: renderMore, reports: renderReports, budgets: renderBudgets, goals: renderGoals, recurring: renderRecurring, accounts: renderAccounts, security: renderSecurity})[S.view](v);
+  if (S.view === "acct") { if (!S.data.accounts[S.acctId]) { S.view = S.from || "home"; return render(); } $("#title").textContent = accName(S.acctId); }
+  ({acct: renderAcct, home: renderHome, activity: renderActivity, owe: renderOwe, owed: renderOwed, more: renderMore, reports: renderReports, budgets: renderBudgets, goals: renderGoals, recurring: renderRecurring, accounts: renderAccounts, security: renderSecurity})[S.view](v);
 }
 
-function txnRow(t) {
+function txnRow(t, o = {}) {
   let title, sub, amt, cls = "", icon;
   if (t.type === "expense") { title = t.cat; sub = accName(t.acct); amt = "−" + fmt(t.amt); cls = "out"; icon = catIcon(t.cat); }
   else if (t.type === "income") { title = t.cat; sub = accName(t.acct); amt = "+" + fmt(t.amt); cls = "in"; icon = catIcon(t.cat); }
@@ -390,7 +391,8 @@ function txnRow(t) {
   const b = t.type === "expense" && t.biz ? BIZ[t.biz]?.label : null; if (b) sub = b + " · " + sub;
   if (t.type === "adjust") { title = "Balance adjustment"; sub = accName(t.acct) + " · matched to actual"; amt = (t.delta < 0 ? "−" : "+") + fmt(t.delta); icon = "sliders"; cls = "muted"; }
   if (t.note) sub += " · " + t.note;
-  return `<button type="button" class="row" data-tx="${esc(t.id)}"><span class="tile t-${t.type}">${ico(icon)}</span><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}</div></button>`;
+  if (o.amt != null) { amt = o.amt; cls = o.cls || ""; }
+  return `<button type="button" class="row" data-tx="${esc(t.id)}"><span class="tile t-${t.type}">${ico(icon)}</span><div class="main"><div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div></div><div class="a ${cls}">${amt}${o.run != null ? `<small class="run">${esc(o.run)}</small>` : ""}</div></button>`;
 }
 function wireRows(root) {
   root.querySelectorAll("[data-tx]").forEach(b => b.onclick = () => {
@@ -402,7 +404,7 @@ const barsHTML = (obj, inc) => {
   const rows = Object.entries(obj).sort((a, b) => b[1] - a[1]); const max = rows[0]?.[1] || 1;
   return `<div class="bars">${rows.map(([k, v]) => `<div class="bar-row"><span class="tile sm t-${inc ? "income" : "expense"}">${ico(catIcon(k))}</span><span class="nm">${esc(k)}</span><span class="amt">${fmt(v)}</span><div class="bar-track"><div class="bar-fill${inc ? " inc" : ""}" style="width:${Math.max(2, v / max * 100).toFixed(1)}%"></div></div></div>`).join("")}</div>`;
 };
-const go = view => { S.view = view; if (NAV.some(n => n[0] === view)) pref.set("view", view); closeSheet(); window.scrollTo(0, 0); render(); };
+const go = view => { if (view === "acct" && S.view !== "acct") S.from = S.view; S.view = view; if (NAV.some(n => n[0] === view)) pref.set("view", view); closeSheet(); window.scrollTo(0, 0); render(); };
 const wireGo = v => v.querySelectorAll("[data-go]").forEach(b => b.onclick = () => go(b.dataset.go));
 
 let installEvt = null;
@@ -500,7 +502,7 @@ function renderHome(v) {
     if (q === "pay") { const first = dues[0]; openTxn({type: "transfer", to: first?.a.id || accounts().find(a => kindOf(a) === "liability")?.id, amt: first ? (first.loan ? first.a.monthly : first.st.left) : null}); }
     else openTxn({type: q});
   });
-  v.querySelectorAll("[data-hacc]").forEach(b => b.onclick = () => openAccount(b.dataset.hacc));
+  v.querySelectorAll("[data-hacc]").forEach(b => b.onclick = () => openAcct(b.dataset.hacc));
   const at = $("#acc-toggle"); if (at) at.onclick = () => { pref.set("accOpen", !pref.get("accOpen", true)); render(); };
   $("#eye").onclick = () => { privacy = !privacy; pref.set("privacy", privacy); applyPrivacy(); render(); };
   v.querySelectorAll("[data-fav]").forEach(b => b.onclick = () => useFav(b.dataset.fav));
@@ -865,7 +867,7 @@ function renderAccounts(v) {
   ${sect("Cards &amp; pay later", a => a.group === "card" || a.group === "bnpl")}
   ${sect("Loans I owe", a => a.group === "loan")}
   <section class="card stack" style="gap:16px"><div><h2 style="font-size:16px">Categories</h2><p class="hint" style="margin:4px 0 0">Tap a category to rename it or change its icon.</p></div>${catBlock("expense", "Expense categories")}${catBlock("income", "Income categories")}</section>`;
-  v.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => openAccount(b.dataset.acc));
+  v.querySelectorAll("[data-acc]").forEach(b => b.onclick = () => openAcct(b.dataset.acc));
   $("#addacc").onclick = () => openAccount();
   $("#startbal").onclick = openStartBalances;
   v.querySelectorAll("[data-rmcat]").forEach(b => b.onclick = () => { const [k, i] = b.dataset.rmcat.split(":"); const n = S.data.cats[k][+i]; withUndo(`Removed "${n}". Old entries keep it`, () => { S.data.cats[k].splice(+i, 1); }); });
@@ -1001,6 +1003,61 @@ function accountsCard(bal) {
   const sum = have.reduce((s, a) => s + bal[a.id], 0);
   return `<section class="card"><div class="section-h" style="margin-bottom:${open ? 12 : 0}px"><h2>Accounts</h2><button type="button" class="btnchip" id="acc-toggle" aria-expanded="${open}"><span class="num">${pesoShort(sum)}</span>${ico("chev", open ? "rot-up" : "rot-down")}</button></div>
     ${open ? `<div class="acc-grid">${have.map(tile).join("")}</div>${owe.length ? `<div class="lbl" style="margin:14px 0 8px">Owed on cards &amp; loans</div><div class="acc-grid">${owe.map(tile).join("")}</div>` : ""}` : ""}</section>`;
+}
+
+/* ================= account ledger ================= */
+const openAcct = id => { S.acctId = id; S.acctMonth = S.acctMonth || "all"; go("acct"); };
+/* How an entry changes this account's shown balance (money held, or amount owed for cards and loans). */
+function acctEffect(t, id) {
+  const sg = kindOf(S.data.accounts[id]) === "liability" ? -1 : 1;
+  if (t.type === "adjust") return t.acct === id ? t.delta : 0;
+  let d = 0;
+  if (t.type === "expense" && t.acct === id) d = -t.amt;
+  else if ((t.type === "income" || t.type === "ar_collect") && t.acct === id) d = t.amt;
+  else if (t.type === "ar_charge" && t.acct === id) d = -t.amt;
+  else if (t.type === "transfer") { if (t.acct === id) d -= t.amt; if (t.to === id) d += t.amt; }
+  return sg * d;
+}
+function renderAcct(v) {
+  const id = S.acctId, a = {...S.data.accounts[id], id}, lib = kindOf(a) === "liability";
+  const list = allTxns().filter(t => acctEffect(t, id) !== 0).sort((x, y) => x.date.localeCompare(y.date) || (x.at || 0) - (y.at || 0));
+  let run = a.opening || 0; const runAfter = {};
+  list.forEach(t => { run += acctEffect(t, id); runAfter[t.id] = run; });
+  const now = run, mk = mKey(today());
+  const inM = list.filter(t => t.date.startsWith(mk)), plus = inM.filter(t => acctEffect(t, id) > 0).reduce((s, t) => s + acctEffect(t, id), 0), minus = inM.filter(t => acctEffect(t, id) < 0).reduce((s, t) => s - acctEffect(t, id), 0);
+  const shown = (S.acctMonth === "all" ? list : list.filter(t => t.date.startsWith(S.acctMonth))).slice().reverse();
+  const months = [...new Set(list.map(t => mKey(t.date)))].sort().reverse().slice(0, 12);
+  const days = {}; shown.slice(0, 400).forEach(t => (days[t.date] = days[t.date] || []).push(t));
+  const sign = d => (d > 0 ? "+" : "−") + fmt(d);
+  const goodUp = !lib;
+  v.innerHTML = `
+  <section class="hero">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="eyebrow">${esc(GROUPS[a.group].label)} · ${lib ? "owed now" : "balance now"}</div><span class="tile sm ${lib ? "t-expense" : "t-transfer"}">${ico(GROUPS[a.group].icon)}</span></div>
+    <div class="big ${lib ? "out" : now < 0 ? "out" : ""}">${now < 0 ? "−" : ""}${fmt(now).split(".")[0]}<small>.${fmt(now).split(".")[1]}</small></div>
+    <div class="hero-grid">
+      <div><div class="k">${ico(lib ? "out" : "in")}${lib ? "Charged" : "In"} · ${esc(mAbbr(mk))}</div><div class="v ${goodUp ? "in" : "out"}">${pesoShort(plus)}</div></div>
+      <div><div class="k">${ico(lib ? "in" : "out")}${lib ? "Paid" : "Out"} · ${esc(mAbbr(mk))}</div><div class="v ${goodUp ? "out" : "in"}">${pesoShort(minus)}</div></div>
+      <div><div class="k">${ico("sliders")}Started</div><div class="v">${pesoShort(a.opening || 0)}</div></div>
+    </div>
+  </section>
+  <div class="actions" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr))">
+    <button type="button" class="btn" id="ac-add">${ico("plus")}Log</button>
+    <button type="button" class="btn" id="ac-move">${ico("swap")}${lib ? "Pay" : "Transfer"}</button>
+    <button type="button" class="btn" id="ac-match">${ico("sliders")}Match</button>
+  </div>
+  ${months.length > 1 ? `<div class="filters"><button type="button" class="btnchip" data-am="all" aria-pressed="${S.acctMonth === "all"}">All</button>${months.map(m => `<button type="button" class="btnchip" data-am="${m}" aria-pressed="${S.acctMonth === m}">${esc(mLabel(m))}</button>`).join("")}</div>` : ""}
+  <section class="card" style="padding-block:4px 10px">
+    ${shown.length ? Object.entries(days).map(([d, ts]) => `<div class="day-h">${esc(dLabel(d))}${d.slice(0, 4) !== today().slice(0, 4) ? " " + d.slice(0, 4) : ""}</div><div class="rows">${ts.map(t => { const e = acctEffect(t, id); return txnRow(t, {amt: sign(e), cls: (e > 0) === goodUp ? "in" : "out", run: (lib ? "owe " : "bal ") + pesoShort(runAfter[t.id])}); }).join("")}</div>`).join("")
+      : `<div class="empty" style="padding:22px 8px"><p style="margin:0">No activity${S.acctMonth === "all" ? " yet" : " this month"}. The balance is the starting amount.</p></div>`}
+    ${shown.length ? `<div class="day-h">Starting balance · ${pesoShort(a.opening || 0)}</div>` : ""}
+  </section>
+  <button type="button" class="btn block" id="ac-edit">${ico("edit")}Edit account</button>`;
+  wireRows(v);
+  v.querySelectorAll("[data-am]").forEach(b => b.onclick = () => { S.acctMonth = b.dataset.am; render(); });
+  $("#ac-add").onclick = () => openTxn({type: "expense", prefill: {acct: id}});
+  $("#ac-move").onclick = () => openTxn(lib ? {type: "transfer", to: id, amt: a.group === "loan" ? a.monthly : cardStatus(a)?.left || null} : {type: "transfer", prefill: {acct: id}});
+  $("#ac-match").onclick = () => openReconcile(id);
+  $("#ac-edit").onclick = () => openAccount(id);
 }
 
 /* ================= quality of life ================= */
@@ -1441,7 +1498,7 @@ function openPerson(id, kindDefault) {
 
 /* ================= nav + boot ================= */
 document.querySelectorAll(".nav button").forEach(b => b.onclick = () => go(b.dataset.v));
-$("#back").onclick = () => go("more");
+$("#back").onclick = () => go(S.view === "acct" ? (S.from || "home") : "more");
 $("#fab").onclick = () => openTxn();
 $("#mprev").onclick = () => { S.month = mShift(S.month, -1); render(); };
 $("#mnext").onclick = () => { S.month = mShift(S.month, 1); render(); };
