@@ -1046,6 +1046,21 @@ function unassigned(pid) {
   const p = S.data.people[pid], tx = allTxns().filter(t => t.person === pid && !t.loan);
   return (p.opening || 0) + tx.filter(t => t.type === "ar_charge").reduce((s, t) => s + t.amt, 0) - tx.filter(t => t.type === "ar_collect").reduce((s, t) => s + t.amt, 0);
 }
+/* Everything this person still owes, oldest first: old balance, then each loan by date. */
+function openItems(pid) {
+  const p = S.data.people[pid]; const out = [];
+  const un = unassigned(pid);
+  if (un > 0) out.push({loan: "", name: p.kind === "loan" ? "Earlier balance" : KINDS[p.kind].label + " balance", bal: un, date: "0000"});
+  personLoans(pid).filter(l => l.bal > 0).forEach(l => out.push({loan: l.id, name: l.name, bal: l.bal, date: l.date}));
+  return out.sort((a, b) => a.date.localeCompare(b.date));
+}
+function allocate(pid, amt) {
+  let left = amt; const parts = [];
+  for (const it of openItems(pid)) { if (left <= 0) break; const x = Math.min(left, it.bal); parts.push({loan: it.loan, amt: x, name: it.name}); left -= x; }
+  if (left > 0) parts.push({loan: "", amt: left, name: "Paid ahead"});
+  return parts;
+}
+const allocLines = parts => parts.map(x => `${x.name} ${fmt(x.amt)}`).join(" · ");
 function applyOptions(pid) {
   const p = S.data.people[pid]; const ls = personLoans(pid).filter(l => l.bal > 0);
   const un = unassigned(pid); const opts = ls.map(l => [l.id, `${l.name} · ${pesoShort(l.bal)}`, "coins"]);
@@ -1294,8 +1309,22 @@ function openTxn(o = {}) {
           const box = dyn.querySelector("#f-apply"); if (!box) return;
           const pid = val(dyn, "person") || sel.person; const opts = pid ? applyOptions(pid) : [];
           box.hidden = opts.length < 2; if (box.hidden) { box.innerHTML = opts.length ? `<input type="radio" name="loan" value="${esc(opts[0][0])}" checked hidden>` : ""; return; }
-          const keep = e?.loan ?? o.loan ?? sel.loan; const def = opts.some(x => x[0] === keep) ? keep : opts[0][0];
-          box.innerHTML = `<span class="lbl">Apply to</span>${chipsHTML("loan", opts.map(([v, l, ic]) => [v, l, ic]), def)}`;
+          const multi = !e ? [["__auto", "Oldest first", "layers"], ["__split", "Split by hand", "sliders"]] : [];
+          const keep = e?.loan ?? o.loan ?? sel.loan; const def = (opts.some(x => x[0] === keep) || (keep && keep.startsWith("__"))) ? keep : (!e && !o.loan ? "__auto" : opts[0][0]);
+          box.innerHTML = `<span class="lbl">Apply to</span>${chipsHTML("loan", [...multi, ...opts], def)}<div id="f-split" class="sb-list" style="margin-top:10px" hidden></div><p class="hint" id="f-alloc" style="margin:8px 0 0"></p>`;
+          const split = box.querySelector("#f-split"), alloc = box.querySelector("#f-alloc");
+          const items = openItems(pid);
+          split.innerHTML = items.map(it => `<label class="sb-row"><span class="tile sm t-ar_charge">${ico(it.loan ? "coins" : KINDS[S.data.people[pid].kind].icon)}</span><span class="sb-name">${esc(it.name)}<small>owes ${fmt(it.bal)}</small></span><input class="input num" data-split="${esc(it.loan)}" inputmode="decimal" placeholder="0.00" aria-label="Amount for ${esc(it.name)}"></label>`).join("");
+          const amtI = root.querySelector("#f-amt");
+          const show = () => {
+            const mode = val(box, "loan"); split.hidden = mode !== "__split"; alloc.textContent = "";
+            if (mode === "__auto") { const a = evalAmt(amtI.value); if (a) alloc.textContent = allocLines(allocate(pid, a)); }
+            if (mode === "__split") { const tot = [...split.querySelectorAll("[data-split]")].reduce((s2, i) => s2 + (evalAmt(i.value) || 0), 0); if (tot) { amtI.value = (tot / 100).toFixed(2); } alloc.textContent = tot ? `Total ${fmt(tot)}` : "Type how much goes to each. The total fills in above."; }
+          };
+          box.querySelectorAll('input[name="loan"]').forEach(r => r.onchange = show);
+          split.querySelectorAll("[data-split]").forEach(i => i.oninput = show);
+          amtI.addEventListener("input", () => { if (val(box, "loan") === "__auto") show(); });
+          show();
         };
         dyn.querySelectorAll('input[name="person"]').forEach(r => r.onchange = drawApply); drawApply(); }
     }
@@ -1335,7 +1364,17 @@ function openTxn(o = {}) {
         if (ib && !ib.hidden) { const r = readAmt(dyn, "#f-intamt", {label: "interest"}); if (r.err) return err(r.err);
           if (r.v) { if (r.v >= amt) return err("Interest must be less than the total payment."); t.amt = amt - r.v; if (!S.data.cats.expense.includes("Interest & fees")) S.data.cats.expense.push("Interest & fees"); extra = {id: newId(), type: "expense", cat: "Interest & fees", acct: t.acct, amt: r.v, date, at: Date.now() + 1, pairTo: t.to, note: "Interest · " + accName(t.to)}; } }
       }
-      else if (type === "collect") { t.type = "ar_collect"; t.person = g("person"); t.acct = g("acct"); const ln = g("loan"); if (ln) t.loan = ln; if (!t.person) return err("Pick who paid you."); if (!t.acct) return err("Pick where you deposited it."); }
+      else if (type === "collect") { t.type = "ar_collect"; t.person = g("person"); t.acct = g("acct"); const ln = g("loan"); if (ln && !ln.startsWith("__")) t.loan = ln; if (!t.person) return err("Pick who paid you."); if (!t.acct) return err("Pick where you deposited it.");
+        if (ln === "__auto" || ln === "__split") {
+          let parts;
+          if (ln === "__auto") parts = allocate(t.person, amt);
+          else { parts = [...dyn.querySelectorAll("[data-split]")].map(i => ({loan: i.dataset.split, amt: evalAmt(i.value) || 0, name: i.closest(".sb-row").querySelector(".sb-name").firstChild.textContent})).filter(x => x.amt);
+            const tot = parts.reduce((s2, x) => s2 + x.amt, 0); if (!tot) return err("Enter how much goes to at least one loan."); if (tot !== amt) return err(`The split adds up to ${fmt(tot)}, not ${fmt(amt)}.`); }
+          const grp = newId(), base = {type: "ar_collect", person: t.person, acct: t.acct, date, grp}; if (note) base.note = note;
+          parts.forEach((x, i) => { const pt = {...base, amt: x.amt, at: Date.now() + i}; if (x.loan) pt.loan = x.loan; S.data.txns[newId()] = pt; });
+          if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
+          save(); closeSheet(); toast(`${fmt(amt)} applied to ${parts.length} ${parts.length > 1 ? "items" : "item"}`); return;
+        } }
       if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
       const before = t.type === "expense" ? (budgetUse(t.cat, mKey(t.date))?.spent || 0) - (e && e.type === "expense" && e.cat === t.cat && mKey(e.date) === mKey(t.date) ? e.amt : 0) : 0;
       if (extra) { const {id, ...body} = extra; S.data.txns[id] = body; }
@@ -1344,6 +1383,11 @@ function openTxn(o = {}) {
     };
     const del = root.querySelector("#f-del");
     if (del) armDelete(del, () => { closeSheet(); delTxn(e.id); });
+    if (e?.grp) { const parts = allTxns().filter(x => x.grp === e.grp); if (parts.length > 1) {
+      const tot = parts.reduce((s2, x) => s2 + x.amt, 0);
+      del.insertAdjacentHTML("beforebegin", `<p class="hint" style="margin:0">Part of one ${fmt(tot)} payment split across ${parts.length} items.</p><button type="button" class="btn danger block" id="f-delgrp">Delete the whole ${fmt(tot)} payment</button>`);
+      armDelete(root.querySelector("#f-delgrp"), () => { closeSheet(); withUndo("Payment deleted", () => parts.forEach(x => delete S.data.txns[x.id])); });
+    } }
   });
 }
 function openCharge(pid, edit) {
