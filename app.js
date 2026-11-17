@@ -1309,20 +1309,28 @@ function openTxn(o = {}) {
           const box = dyn.querySelector("#f-apply"); if (!box) return;
           const pid = val(dyn, "person") || sel.person; const opts = pid ? applyOptions(pid) : [];
           box.hidden = opts.length < 2; if (box.hidden) { box.innerHTML = opts.length ? `<input type="radio" name="loan" value="${esc(opts[0][0])}" checked hidden>` : ""; return; }
-          const multi = !e ? [["__auto", "Oldest first", "layers"], ["__split", "Split by hand", "sliders"]] : [];
+          const multi = !e ? [["__auto", "Oldest first", "layers"], ["__split", "Pick loans", "check"]] : [];
           const keep = e?.loan ?? o.loan ?? sel.loan; const def = (opts.some(x => x[0] === keep) || (keep && keep.startsWith("__"))) ? keep : (!e && !o.loan ? "__auto" : opts[0][0]);
           box.innerHTML = `<span class="lbl">Apply to</span>${chipsHTML("loan", [...multi, ...opts], def)}<div id="f-split" class="sb-list" style="margin-top:10px" hidden></div><p class="hint" id="f-alloc" style="margin:8px 0 0"></p>`;
           const split = box.querySelector("#f-split"), alloc = box.querySelector("#f-alloc");
           const items = openItems(pid);
-          split.innerHTML = items.map(it => `<label class="sb-row"><span class="tile sm t-ar_charge">${ico(it.loan ? "coins" : KINDS[S.data.people[pid].kind].icon)}</span><span class="sb-name">${esc(it.name)}<small>owes ${fmt(it.bal)}</small></span><input class="input num" data-split="${esc(it.loan)}" inputmode="decimal" placeholder="0.00" aria-label="Amount for ${esc(it.name)}"></label>`).join("");
+          split.innerHTML = `<label class="check pick-all"><input type="checkbox" id="pick-all">Select all · ${fmt(items.reduce((s2, it) => s2 + it.bal, 0))}</label>` + items.map(it => `<div class="pick-row"><input type="checkbox" class="pick-cb" data-pick="${esc(it.loan)}" data-bal="${it.bal}" aria-label="Include ${esc(it.name)}"><span class="sb-name">${esc(it.name)}<small>owes ${fmt(it.bal)}</small></span><input class="input num" data-split="${esc(it.loan)}" inputmode="decimal" placeholder="0.00" aria-label="Amount for ${esc(it.name)}"></div>`).join("");
           const amtI = root.querySelector("#f-amt");
           const show = () => {
             const mode = val(box, "loan"); split.hidden = mode !== "__split"; alloc.textContent = "";
             if (mode === "__auto") { const a = evalAmt(amtI.value); if (a) alloc.textContent = allocLines(allocate(pid, a)); }
-            if (mode === "__split") { const tot = [...split.querySelectorAll("[data-split]")].reduce((s2, i) => s2 + (evalAmt(i.value) || 0), 0); if (tot) { amtI.value = (tot / 100).toFixed(2); } alloc.textContent = tot ? `Total ${fmt(tot)}` : "Type how much goes to each. The total fills in above."; }
+            if (mode === "__split") {
+              const rows = [...split.querySelectorAll(".pick-row")]; let tot = 0, n = 0, partial = 0;
+              rows.forEach(r => { const v = evalAmt(r.querySelector("[data-split]").value) || 0; const bal = +r.querySelector(".pick-cb").dataset.bal; r.querySelector(".pick-cb").checked = v > 0; r.classList.toggle("on", v > 0); if (v) { tot += v; n++; if (v < bal) partial++; } });
+              const all = split.querySelector("#pick-all"); all.checked = rows.length > 0 && n === rows.length;
+              amtI.value = tot ? (tot / 100).toFixed(2) : "";
+              alloc.textContent = tot ? `${n} loan${n > 1 ? "s" : ""} · total ${fmt(tot)}${partial ? ` · ${partial} partly paid` : ""}` : "Tick the loans being paid. Each fills in its full balance; change an amount if they paid only part.";
+            }
           };
           box.querySelectorAll('input[name="loan"]').forEach(r => r.onchange = show);
           split.querySelectorAll("[data-split]").forEach(i => i.oninput = show);
+          split.querySelectorAll(".pick-cb").forEach(cb => cb.onchange = () => { const i = cb.parentElement.querySelector("[data-split]"); i.value = cb.checked ? (cb.dataset.bal / 100).toFixed(2) : ""; show(); });
+          split.querySelector("#pick-all").onchange = ev => { split.querySelectorAll(".pick-cb").forEach(cb => { cb.checked = ev.target.checked; cb.parentElement.querySelector("[data-split]").value = cb.checked ? (cb.dataset.bal / 100).toFixed(2) : ""; }); show(); };
           amtI.addEventListener("input", () => { if (val(box, "loan") === "__auto") show(); });
           show();
         };
@@ -1368,8 +1376,8 @@ function openTxn(o = {}) {
         if (ln === "__auto" || ln === "__split") {
           let parts;
           if (ln === "__auto") parts = allocate(t.person, amt);
-          else { parts = [...dyn.querySelectorAll("[data-split]")].map(i => ({loan: i.dataset.split, amt: evalAmt(i.value) || 0, name: i.closest(".sb-row").querySelector(".sb-name").firstChild.textContent})).filter(x => x.amt);
-            const tot = parts.reduce((s2, x) => s2 + x.amt, 0); if (!tot) return err("Enter how much goes to at least one loan."); if (tot !== amt) return err(`The split adds up to ${fmt(tot)}, not ${fmt(amt)}.`); }
+          else { parts = [...dyn.querySelectorAll("[data-split]")].map(i => ({loan: i.dataset.split, amt: evalAmt(i.value) || 0, name: i.closest(".pick-row").querySelector(".sb-name").firstChild.textContent})).filter(x => x.amt);
+            const tot = parts.reduce((s2, x) => s2 + x.amt, 0); if (!tot) return err("Tick at least one loan."); if (tot !== amt) return err(`The split adds up to ${fmt(tot)}, not ${fmt(amt)}.`); }
           const grp = newId(), base = {type: "ar_collect", person: t.person, acct: t.acct, date, grp}; if (note) base.note = note;
           parts.forEach((x, i) => { const pt = {...base, amt: x.amt, at: Date.now() + i}; if (x.loan) pt.loan = x.loan; S.data.txns[newId()] = pt; });
           if (!e) { pref.set("lastType", type); const la = pref.get("lastAcct", {}); la[type] = t.acct; pref.set("lastAcct", la); }
