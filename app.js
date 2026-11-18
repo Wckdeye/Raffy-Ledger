@@ -143,6 +143,30 @@ const TYPES = [["expense", "Expense", "out"], ["income", "Income", "in"], ["tran
 
 /* ================= storage ================= */
 const KEY = "raffy-ledger-v1";
+const APP_VERSION = 16;
+/* Older lendings were one lump per person. Give each one its own loan and apply earlier payments oldest first. */
+function splitOldLoans(d) {
+  d.loans = d.loans || {};
+  Object.entries(d.people).forEach(([pid, p]) => {
+    if (p.kind !== "loan") return;
+    const tx = Object.entries(d.txns).filter(([, t]) => t.person === pid && !t.loan);
+    const charges = tx.filter(([, t]) => t.type === "ar_charge").sort((a, b) => a[1].date.localeCompare(b[1].date) || (a[1].at || 0) - (b[1].at || 0));
+    if (!charges.length) return;
+    const buckets = [];
+    if (p.opening > 0) buckets.push({loan: "", left: p.opening});
+    charges.forEach(([, t], i) => { const lid = "m" + pid.slice(0, 6) + i + Math.random().toString(36).slice(2, 6);
+      d.loans[lid] = {person: pid, name: `Loan ${i + 1}`, date: t.date}; t.loan = lid; buckets.push({loan: lid, left: t.amt}); });
+    const collects = tx.filter(([, t]) => t.type === "ar_collect").sort((a, b) => a[1].date.localeCompare(b[1].date) || (a[1].at || 0) - (b[1].at || 0));
+    collects.forEach(([cid, c]) => {
+      let left = c.amt; const parts = [];
+      for (const bk of buckets) { if (left <= 0) break; if (bk.left <= 0) continue; const x = Math.min(left, bk.left); bk.left -= x; left -= x; parts.push({loan: bk.loan, amt: x}); }
+      if (left > 0) parts.push({loan: "", amt: left});
+      if (parts.length === 1) { if (parts[0].loan) c.loan = parts[0].loan; return; }
+      const grp = "g" + cid; delete d.txns[cid];
+      parts.forEach((pt, i) => { const n = {...c, amt: pt.amt, grp, at: (c.at || 0) + i}; delete n.loan; if (pt.loan) n.loan = pt.loan; d.txns[cid + "_" + i] = n; });
+    });
+  });
+}
 let view0 = pref.get("view", "home"); if (view0 === "cards") view0 = "owe"; if (view0 === "accounts") view0 = "more";
 const S = { data: null, view: NAV.some(n => n[0] === view0) ? view0 : "home", month: mKey(today()), filter: "all", pfilter: "all", q: "", rmode: "month" };
 function load() { try { const raw = localStorage.getItem(KEY); return raw ? JSON.parse(raw) : null; } catch { return null; } }
@@ -160,6 +184,7 @@ function normalize(d) {
     d.ver = 2; changed = true;
   }
   if (d.ver < 3) { Object.values(d.people).forEach(p => { if (KINDS[p.kind]?.monthly && !p.billFrom) p.billFrom = mKey(today()); }); d.ver = 3; changed = true; }
+  if (d.ver < 4) { splitOldLoans(d); d.ver = 4; changed = true; }
   return [d, changed];
 }
 { const raw = load(); if (raw) { const [d, ch] = normalize(raw); S.data = d; if (ch) persist(); } }
@@ -645,6 +670,7 @@ function renderOwed(v) {
   v.querySelectorAll("[data-remind]").forEach(b => b.onclick = () => openRemind(b.dataset.remind, rec[b.dataset.remind], ag[b.dataset.remind]));
   v.querySelectorAll("[data-charge]").forEach(b => b.onclick = () => S.data.people[b.dataset.charge].kind === "loan" ? openNewLoan(b.dataset.charge) : openCharge(b.dataset.charge));
   v.querySelectorAll("[data-loan]").forEach(b => b.onclick = () => openLoan(b.dataset.loan));
+  v.querySelectorAll("[data-break]").forEach(b => b.onclick = () => openBreakEarlier(b.dataset.break));
   v.querySelectorAll("[data-person]").forEach(b => b.onclick = () => openPerson(b.dataset.person));
 }
 function billMonth(list, mk) {
@@ -665,7 +691,8 @@ function renderMore(v) {
     ["security", "Security & backup", lockState() ? "PIN lock on" : "PIN lock off · export or restore", "shield", "t-neutral"],
   ];
   v.innerHTML = `<div class="menu">${items.map(([k, t, s, ic, cls]) => `<button type="button" class="row" data-go="${k}"><span class="tile ${cls}">${ico(ic)}</span><div class="main"><div class="t">${t}</div><div class="s">${esc(s)}</div></div>${ico("chev", "chev")}</button>`).join("")}</div>
-  <p class="hint" style="margin:0">Pickle Jar sales stay in its own app. Log money you put in as a transfer to Pickle Jar capital, and money you take out as a transfer back.</p>`;
+  <p class="hint" style="margin:0">Pickle Jar sales stay in its own app. Log money you put in as a transfer to Pickle Jar capital, and money you take out as a transfer back.</p>
+  <p class="hint" style="margin:0;text-align:center">App version ${APP_VERSION}</p>`;
   wireGo(v);
 }
 
@@ -1015,7 +1042,7 @@ function renderSetup(v) {
       accs[id] = {name: $("#sn-" + id).value.trim() || name, group: g, opening: amt || 0, order: i};
     });
     if (bad) { $("#setup-err").textContent = "One of the balances isn't a number. Use digits like 12,500.00."; return; }
-    S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today(), ver: 3})[0];
+    S.data = normalize({accounts: accs, people: {}, cats: clone(DEFAULT_CATS), txns: {}, created: today(), ver: 4})[0];
     save(); toast("Books created");
   };
 }
@@ -1070,9 +1097,39 @@ function applyOptions(pid) {
 }
 function loansHTML(p) {
   const ls = personLoans(p.id); const un = unassigned(p.id);
-  if (!ls.length) return "";
+  if (!ls.length && !(p.kind === "loan" && un > 0)) return "";
   return `<div class="loan-list">${ls.map(l => `<button type="button" class="loan-row" data-loan="${l.id}"><span class="tile sm ${l.bal > 0 ? "t-ar_charge" : "t-income"}">${ico("coins")}</span><span class="loan-txt"><span class="loan-n">${esc(l.name)}</span><span class="loan-s">${esc(dShort(l.date))}${l.date.slice(0, 4) !== today().slice(0, 4) ? " " + l.date.slice(0, 4) : ""} · lent ${pesoShort(l.lent)}</span>${progHTML(l.lent ? l.paid / l.lent : 0, l.bal <= 0 ? "ok" : "")}</span><span class="loan-b ${l.bal > 0 ? "out" : "in"}">${l.bal > 0 ? pesoShort(l.bal) : "Paid"}</span></button>`).join("")}
-    ${un ? `<div class="loan-row" style="cursor:default"><span class="tile sm t-neutral">${ico(KINDS[p.kind].icon)}</span><span class="loan-txt"><span class="loan-n">${p.kind === "loan" ? "Earlier balance" : esc(KINDS[p.kind].label) + " balance"}</span><span class="loan-s">${p.kind === "loan" ? "From before loans were tracked one by one" : "Bills and payments"}</span></span><span class="loan-b ${un > 0 ? "out" : "in"}">${pesoShort(un)}</span></div>` : ""}</div>`;
+    ${un ? `<${p.kind === "loan" && un > 0 ? `button type="button" data-break="${p.id}"` : `div style="cursor:default"`} class="loan-row"><span class="tile sm t-neutral">${ico(KINDS[p.kind].icon)}</span><span class="loan-txt"><span class="loan-n">${p.kind === "loan" ? "Earlier balance" : esc(KINDS[p.kind].label) + " balance"}</span><span class="loan-s">${p.kind === "loan" && un > 0 ? "Several loans in one? Tap to break it up" : p.kind === "loan" ? "From before loans were tracked one by one" : "Bills and payments"}</span></span><span class="loan-b ${un > 0 ? "out" : "in"}">${pesoShort(un)}</span></${p.kind === "loan" && un > 0 ? "button" : "div"}>` : ""}</div>`;
+}
+function openBreakEarlier(pid) {
+  const p = S.data.people[pid]; const max = unassigned(pid);
+  const rowHTML = i => `<div class="brk-row"><input class="input" data-bn="${i}" maxlength="40" placeholder="Loan ${personLoans(pid, true).length + i + 1}" aria-label="Loan name"><input class="input" type="date" data-bd="${i}" aria-label="Date lent"><input class="input num" data-ba="${i}" inputmode="decimal" placeholder="0.00" aria-label="Amount"></div>`;
+  let n = 2;
+  openSheet(`Break up ${p.name}'s earlier balance`, `
+  <p class="hint" style="margin:0">${esc(p.name)}'s earlier balance is ${fmt(max)}. Enter the separate loans that make it up. No account changes: this money already left before you started tracking.</p>
+  <div id="brk" class="sb-list">${rowHTML(0)}${rowHTML(1)}</div>
+  <button type="button" class="btn" id="brk-add">${ico("plus")}Add another loan</button>
+  <p class="hint" id="brk-left" style="margin:0"></p>
+  <div class="err" id="brk-err"></div>
+  <button type="button" class="btn primary block" id="brk-save">${ico("check")}Save loans</button>`, root => {
+    const box = root.querySelector("#brk"), left = root.querySelector("#brk-left");
+    const tot = () => [...box.querySelectorAll("[data-ba]")].reduce((s2, i) => s2 + (evalAmt(i.value) || 0), 0);
+    const upd = () => { const t = tot(), r = max - t; left.textContent = t ? (r >= 0 ? `Entered ${fmt(t)} · ${r ? fmt(r) + " stays as earlier balance" : "covers the whole earlier balance"}` : `That's ${fmt(-r)} more than the earlier balance.`) : ""; left.className = "hint" + (r < 0 ? " out" : ""); };
+    box.addEventListener("input", upd);
+    root.querySelector("#brk-add").onclick = () => { box.insertAdjacentHTML("beforeend", rowHTML(n++)); };
+    root.querySelector("#brk-save").onclick = () => {
+      const E = m => root.querySelector("#brk-err").textContent = m;
+      const rows = [...box.querySelectorAll(".brk-row")].map(r => ({name: r.querySelector("[data-bn]").value.trim() || r.querySelector("[data-bn]").placeholder, date: r.querySelector("[data-bd]").value, amt: evalAmt(r.querySelector("[data-ba]").value) || 0})).filter(x => x.amt);
+      if (!rows.length) return E("Enter at least one loan amount.");
+      if (rows.some(x => !x.date)) return E("Add the date for each loan, even a rough one.");
+      const t = rows.reduce((s2, x) => s2 + x.amt, 0); if (t > max) return E(`The loans add up to ${fmt(t)}, more than the ${fmt(max)} earlier balance.`);
+      withUndo(`${rows.length} loan${rows.length > 1 ? "s" : ""} created for ${p.name}`, () => {
+        p.opening = (p.opening || 0) - t;
+        rows.forEach((x, i) => { const lid = newId(); S.data.loans[lid] = {person: pid, name: x.name, date: x.date}; S.data.txns[newId()] = {type: "ar_charge", person: pid, loan: lid, amt: x.amt, date: x.date, at: Date.now() + i, note: "From earlier balance"}; });
+      });
+      closeSheet();
+    };
+  });
 }
 function openNewLoan(pid, loanId) {
   const p = S.data.people[pid]; const n = personLoans(pid, true).length + 1; const L = loanId ? S.data.loans[loanId] : null;
